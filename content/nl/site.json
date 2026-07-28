@@ -1,0 +1,136 @@
+{
+  "site": {
+    "brandName": "Ameland Residence",
+    "tagline": "Genieten in luxe bij Ameland Residence",
+    "logo": "/media/logo-ameland-residence-donker01.svg",
+    "nav": [
+      {
+        "label": "Home",
+        "url": "/"
+      },
+      {
+        "label": "Villa's",
+        "url": "/villa-s"
+      },
+      {
+        "label": "Last minutes",
+        "url": "/last-minutes"
+      },
+      {
+        "label": "Over ons",
+        "url": "/over-ons"
+      },
+      {
+        "label": "Video",
+        "url": "/video"
+      },
+      {
+        "label": "Blogs",
+        "url": "/blogs"
+      },
+      {
+        "label": "Voorwaarden",
+        "url": "/algemene-voorwaarden"
+      },
+      {
+        "label": "Reizen naar Ameland",
+        "url": "/reizen-naar-ameland-residence"
+      },
+      {
+        "label": "Contact",
+        "url": "/contact"
+      }
+    ],
+    "ctaLabel": "Zoek & Boek",
+    "ctaUrl": "/zoek-boek",
+    "booking": {
+      "account": "AmelandResidence",
+      "searchTitle": "Zoek & boek",
+      "language": "nl",
+      "country": "nl",
+      "successUrl": "/bedankt-voor-uw-boeking"
+    },
+    "footer": {
+      "about": "Genieten in luxe bij Ameland Residence",
+      "addressTitle": "Contactgegevens",
+      "address": [
+        "Ameland Residence",
+        "Appelhof 9",
+        "8525 GJ Langweer"
+      ],
+      "email": "info@ameland-residence.nl",
+      "phone": "0513-499436",
+      "badge": "/media/ameland-residence-label.png",
+      "socials": [
+        {
+          "label": "Facebook",
+          "url": "https://www.facebook.com/AmelandResidence/",
+          "icon": "/media/social-icoon-facebook03.svg"
+        }
+      ],
+      "columns": [
+        {
+          "heading": "Ga direct naar",
+          "links": [
+            {
+              "label": "Over ons",
+              "url": "/over-ons"
+            },
+            {
+              "label": "Vakantie op Ameland",
+              "url": "/vakantie-op-ameland"
+            },
+            {
+              "label": "Vakantiehuis met sauna",
+              "url": "/vakantiehuis-met-sauna"
+            },
+            {
+              "label": "Weekendje Ameland",
+              "url": "/weekendje-ameland"
+            }
+          ]
+        },
+        {
+          "heading": "Extra info",
+          "links": [
+            {
+              "label": "Reviews",
+              "url": "/reviews"
+            },
+            {
+              "label": "Fietsverhuur Metz",
+              "url": "https://www.fietsverhuur-ameland.nl/"
+            },
+            {
+              "label": "Wagenborg Passagiersdiensten",
+              "url": "https://www.wpd.nl/"
+            },
+            {
+              "label": "Contact",
+              "url": "/contact"
+            }
+          ]
+        }
+      ],
+      "bottomLinks": [
+        {
+          "label": "Blogs",
+          "url": "/blogs"
+        },
+        {
+          "label": "Voorwaarden",
+          "url": "/algemene-voorwaarden"
+        },
+        {
+          "label": "Privacy Policy",
+          "url": "/privacy-policy"
+        },
+        {
+          "label": "Sitemap",
+          "url": "/sitemap"
+        }
+      ],
+      "rightsText": ""
+    }
+  }
+}
