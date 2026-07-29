@@ -1,14 +1,21 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { JsonLd } from '@/components/JsonLd'
 import { BlogPage, VillaPage } from '@/components/sections'
 import { Shell } from '@/components/Shell'
 import { getBlog, getBlogSlugs } from '@/content/blogs'
+import { itemTrail } from '@/content/breadcrumbs'
 import { buildCtx } from '@/content/ctx'
+import { itemEquivalents } from '@/content/equivalents'
 import { findPageSlugByKind } from '@/content/pages'
+import { getSite } from '@/content/site'
 import { getVilla, getVillaSlugs } from '@/content/villas'
 import { activeLocales } from '@/lib/i18n'
+import { blogPosting, breadcrumbList, graph, vacationRental } from '@/lib/jsonld'
 import { metadataFrom } from '@/lib/seo'
+import { t } from '@/lib/ui-text'
 
 /**
  * Detail pages of the two collections, NESTED under their own hub — exactly the URL structure the
@@ -61,13 +68,16 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string; item: string }> }): Promise<Metadata> {
   const { locale, slug, item } = await params
   const source = collectionFor(locale, slug)
+  if (!source) return {}
+  // Villas exist in both languages (matched by slug or the verified alias table); most articles exist
+  // in one language only and correctly end up with a canonical but no hreflang.
+  const identity = { locale, equivalents: itemEquivalents(locale, item, source) }
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return metadataFrom(villa.seo, villa.title)
-  }
-  if (source === 'blogs') {
+    if (villa) return metadataFrom(villa.seo, villa.title, identity)
+  } else {
     const blog = getBlog(locale, item)
-    if (blog) return metadataFrom(blog.seo, blog.title)
+    if (blog) return metadataFrom(blog.seo, blog.title, identity)
   }
   return {}
 }
@@ -77,13 +87,40 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const source = collectionFor(locale, slug)
   if (!source) notFound() // a two-segment URL whose first segment isn't a hub
   const ctx = buildCtx(locale)
+  const site = getSite(locale)
+
+  // Home › Hub › Item, from the same content the pages render — so the visible trail and the
+  // BreadcrumbList JSON-LD are guaranteed identical.
+  const trail = itemTrail(locale, slug, item, source, site.brandName)
+  const path = `/${slug}/${item}`
+  const label = t(locale, 'breadcrumb')
 
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return <Shell locale={locale}><VillaPage villa={villa} ctx={ctx} /></Shell>
+    if (villa) {
+      // VacationRental facts come from this villa's own text via `villaFacts` — never inferred.
+      const jsonld = graph([vacationRental(locale, item, villa, path, site), breadcrumbList(locale, trail)])
+      return (
+        <Shell locale={locale}>
+          <JsonLd json={jsonld} />
+          {/* Villa pages open with a hero photo, so the trail sits on the image. */}
+          <VillaPage villa={villa} ctx={ctx} crumbs={<Breadcrumb trail={trail} label={label} variant="onImage" />} />
+        </Shell>
+      )
+    }
   } else {
     const blog = getBlog(locale, item)
-    if (blog) return <Shell locale={locale}><BlogPage blog={blog} ctx={ctx} /></Shell>
+    if (blog) {
+      // No author/date: the content model has none — see `blogPosting`.
+      const jsonld = graph([blogPosting(locale, blog, path, site), breadcrumbList(locale, trail)])
+      return (
+        <Shell locale={locale}>
+          <JsonLd json={jsonld} />
+          {/* Articles have no hero image — the trail renders on the light background. */}
+          <BlogPage blog={blog} ctx={ctx} crumbs={<Breadcrumb trail={trail} label={label} />} />
+        </Shell>
+      )
+    }
   }
 
   notFound()

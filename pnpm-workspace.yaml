@@ -3,5 +3,8 @@
 # scripts. Without an explicit decision `pnpm install` exits non-zero with ERR_PNPM_IGNORED_BUILDS,
 # which would fail the platform's validation install.
 allowBuilds:
+  # esbuild backs `tsx`, which runs the SEO audit script (`pnpm seo:audit`). Its postinstall only
+  # fetches/links the platform binary, so it must be allowed or the audit cannot run.
+  esbuild: true
   sharp: true
   unrs-resolver: true

@@ -1,12 +1,20 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { Sections, type RenderCtx } from '@/components/sections'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { JsonLd } from '@/components/JsonLd'
+import { Sections, type RenderCtx, type SectionOpts } from '@/components/sections'
 import { Shell } from '@/components/Shell'
+import { pageTrail } from '@/content/breadcrumbs'
 import { buildCtx } from '@/content/ctx'
+import { pageEquivalents } from '@/content/equivalents'
 import { getPage, getPageSlugs } from '@/content/pages'
+import { getSite } from '@/content/site'
 import { activeLocales } from '@/lib/i18n'
+import { breadcrumbList, graph } from '@/lib/jsonld'
+import { pageHeading } from '@/lib/page-heading'
 import { metadataFrom } from '@/lib/seo'
+import { t } from '@/lib/ui-text'
 import type { PageContent, Section, TextSection } from '@/lib/types'
 
 /**
@@ -41,15 +49,16 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params
   const page = getPage(locale, slug)
-  return page ? metadataFrom(page.seo, page.title) : {}
+  if (!page) return {}
+  return metadataFrom(page.seo, page.title, { locale, equivalents: pageEquivalents(locale, slug) })
 }
 
 /**
- * Render a `pages.json` entry according to its `kind`. Most kinds only ADD a section to whatever the
- * page already has — the contact page gets the form, the sitemap page gets the generated index —
- * so the editable content stays in charge of the rest of the layout.
+ * Build the section list for a `pages.json` entry according to its `kind`. Most kinds only ADD a
+ * section to whatever the page already has — the contact page gets the form, the sitemap page gets
+ * the generated index — so the editable content stays in charge of the rest of the layout.
  */
-function renderPage(page: PageContent, ctx: RenderCtx) {
+function pageSections(page: PageContent): Section[] {
   const sections: Section[] = [...page.sections]
   const has = (type: Section['type']) => sections.some((s) => s.type === type)
 
@@ -79,12 +88,82 @@ function renderPage(page: PageContent, ctx: RenderCtx) {
     default:
       break
   }
-  return <Sections sections={sections} ctx={ctx} />
+  return sections
 }
 
 export default async function Page({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params
   const page = getPage(locale, slug)
   if (!page) notFound()
-  return <Shell locale={locale}>{renderPage(page, buildCtx(locale))}</Shell>
+
+  const ctx: RenderCtx = buildCtx(locale)
+  const site = getSite(locale)
+  const sections = pageSections(page)
+
+  /**
+   * Give the page exactly one <h1>.
+   *
+   * Audit finding: every `pages.json` hero stores `title: ""` and `HeroBlock` rendered its title as a
+   * <p>, so all of these pages shipped with NO h1 and a heading tree starting at <h2>. `pageHeading`
+   * recovers the heading the page ALREADY displays — no new copy — and it is rendered as the <h1> in
+   * the hero, suppressing the now-duplicate heading at its old position.
+   *
+   * Note `pageHeading` runs on the FINAL section list (after `pageSections`), so it sees the sections
+   * that actually render. That matters for the contact page, where the text section is moved inside
+   * the form: it is no longer a top-level section, so its title can't be promoted from there and the
+   * page falls through to its own title instead.
+   */
+  const heading = pageHeading(sections, page.title)
+  const crumbLabel = t(locale, 'breadcrumb')
+  // The trail names this page by its H1, not by its SEO title (which carries a "| brand" suffix).
+  const trail = pageTrail(locale, slug, site.brandName, heading.text)
+
+  const opts: Record<number, SectionOpts> = {}
+  const hasHeroH1 = heading.heroIndex >= 0 && !!heading.text
+  if (hasHeroH1) {
+    // Promote into the hero: inject the text as the hero title, mark it as the h1, add the crumbs.
+    const hero = sections[heading.heroIndex]
+    if (hero.type === 'hero' && !hero.title.trim()) {
+      sections[heading.heroIndex] = { ...hero, title: heading.text }
+    }
+    opts[heading.heroIndex] = {
+      heading: true,
+      crumbs: <Breadcrumb trail={trail} label={crumbLabel} variant="onImage" />,
+    }
+    // Only suppress the old location when the hero took ITS text (not when the hero had its own).
+    if (heading.fromSection >= 0) opts[heading.fromSection] = { suppressTitle: true }
+  } else if (heading.fromSection >= 0) {
+    // No hero on this page — the existing section heading becomes the h1 where it already sits.
+    opts[heading.fromSection] = { headingLevel: 1 }
+  } else if (heading.text) {
+    /**
+     * No hero AND no section carrying a heading — the booking pages (`/zoek-boek`,
+     * `/suchen-buchen`) are just an empty text section plus the Tommy widget. Give the page its
+     * heading by filling that empty text section's title with the page's own (SEO-stripped) title,
+     * so the h1 lands above the widget instead of nowhere.
+     */
+    const target = sections.findIndex((s) => s.type === 'text' || s.type === 'textImage')
+    if (target >= 0) {
+      const s = sections[target]
+      if ((s.type === 'text' || s.type === 'textImage') && !s.title.trim()) {
+        sections[target] = { ...s, title: heading.text }
+      }
+      opts[target] = { headingLevel: 1 }
+    }
+  }
+
+  const jsonld = graph([breadcrumbList(locale, trail)])
+
+  return (
+    <Shell locale={locale}>
+      <JsonLd json={jsonld} />
+      {/* Pages without a hero image show the trail on the light background, above the content. */}
+      {!hasHeroH1 && trail.length > 1 && (
+        <div className="container crumbs--standalone">
+          <Breadcrumb trail={trail} label={t(locale, 'breadcrumb')} />
+        </div>
+      )}
+      <Sections sections={sections} ctx={ctx} opts={opts} />
+    </Shell>
+  )
 }

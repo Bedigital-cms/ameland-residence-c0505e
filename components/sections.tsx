@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import type {
   BannersSection,
@@ -20,6 +20,8 @@ import type {
   VillaCollection,
   VillaContent,
 } from '@/lib/types'
+
+import { t } from '@/lib/ui-text'
 
 import Form, { type FormDef } from './Form'
 import { AlbumSlider } from './AlbumSlider'
@@ -60,11 +62,31 @@ export type RenderCtx = {
 
 /* ------------------------------------------------------------------ pieces */
 
-export function SectionTitle({ title, subtitle }: { title?: string; subtitle?: string }) {
-  if (!title && !subtitle) return null
+/**
+ * A section's own heading. Renders an <h2> by default.
+ *
+ * `suppressTitle` drops the heading text but keeps the subtitle: used when this section's title has
+ * been promoted to the page's <h1> in the hero (see `lib/page-heading.ts`), so the same words are not
+ * printed twice on the page.
+ */
+export function SectionTitle({
+  title,
+  subtitle,
+  suppressTitle = false,
+  headingLevel = 2,
+}: {
+  title?: string
+  subtitle?: string
+  suppressTitle?: boolean
+  /** 1 makes this section's title the page <h1> — for pages with no hero to host it. Default 2. */
+  headingLevel?: 1 | 2
+}) {
+  const showTitle = !!title && !suppressTitle
+  if (!showTitle && !subtitle) return null
+  const H = headingLevel === 1 ? 'h1' : 'h2'
   return (
     <header className="section-head">
-      {title && <h2>{title}</h2>}
+      {showTitle && <H>{title}</H>}
       {subtitle && <p className="section-sub">{subtitle}</p>}
     </header>
   )
@@ -87,20 +109,26 @@ function Cta({ label, url, variant = 'primary' }: { label?: string; url?: string
  */
 type CardVariant = 'overlay' | 'panel'
 
-function CardTile({ card, variant }: { card: Card; variant: CardVariant }) {
+/**
+ * `level` is the heading level for the card title. It is <h3> when the section above the grid has its
+ * own <h2>, but <h2> when that section title was promoted to the page <h1> (villa hub, blog hub) —
+ * otherwise the cards would jump h1 -> h3 and skip a level.
+ */
+function CardTile({ card, variant, level = 3 }: { card: Card; variant: CardVariant; level?: 2 | 3 }) {
+  const H = level === 2 ? 'h2' : 'h3'
   const inner = (
     <>
       <div className="card-media">
         <Media src={card.image} alt={card.title} shape="card" label="Foto" />
         {/* Blijft een kop, ook al ziet het uit als een label — anders verdwijnt de titel uit de
             documentstructuur en hoort een schermlezer alleen "meer informatie". */}
-        {variant === 'overlay' && card.title && <h3 className="card-label">{card.title}</h3>}
+        {variant === 'overlay' && card.title && <H className="card-label">{card.title}</H>}
       </div>
       {/* Artikelkaart: de titel staat in een sage balk over de volle kaartbreedte, direct onder de
           foto — daar is dat een eigen wrapper binnen `.title-holder` met `background: #94a7a8`. De
           samenvatting staat eronder op wit, in het handschriftfont. */}
       {variant === 'panel' && card.title && (
-        <div className="card-titlebar"><h3>{card.title}</h3></div>
+        <div className="card-titlebar"><H>{card.title}</H></div>
       )}
       <div className="card-body">
         {variant === 'panel' && card.text && <p>{card.text}</p>}
@@ -116,12 +144,12 @@ function CardTile({ card, variant }: { card: Card; variant: CardVariant }) {
   )
 }
 
-export function CardGrid({ items, columns = 3, variant = 'panel' }: { items: Card[]; columns?: number; variant?: CardVariant }) {
+export function CardGrid({ items, columns = 3, variant = 'panel', level }: { items: Card[]; columns?: number; variant?: CardVariant; level?: 2 | 3 }) {
   if (!items?.length) return null
   return (
     <div className={`cardgrid cardgrid--${columns}`}>
       {items.map((c, i) => (
-        <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} />
+        <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} level={level} />
       ))}
     </div>
   )
@@ -136,8 +164,8 @@ export function CardGrid({ items, columns = 3, variant = 'panel' }: { items: Car
  * `aantal kaarten * 5,5s`. De tweede reeks is `aria-hidden`, anders staan alle links dubbel in de
  * toegankelijkheidsboom.
  */
-function CardMarquee({ items, variant }: { items: Card[]; variant: CardVariant }) {
-  const set = items.map((c, i) => <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} />)
+function CardMarquee({ items, variant, level }: { items: Card[]; variant: CardVariant; level?: 2 | 3 }) {
+  const set = items.map((c, i) => <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} level={level} />)
   return (
     <div className="marquee" style={{ '--marquee-duration': `${items.length * 5.5}s` } as CSSProperties}>
       <div className="marquee-track">
@@ -150,9 +178,32 @@ function CardMarquee({ items, variant }: { items: Card[]; variant: CardVariant }
 
 /* ---------------------------------------------------------------- sections */
 
-function HeroBlock({ data }: { data: HeroSection }) {
+/**
+ * Full-bleed hero.
+ *
+ * `heading` turns the overlay title into the page's real <h1> (instead of the decorative <p> this
+ * component used for every hero). Pass it on exactly ONE hero per page — the page routes derive it
+ * from existing content via `lib/page-heading.ts`, so no new copy is written and no page ends up with
+ * two H1s. Without `heading` the title stays a <p>, which is right for a hero further down a page
+ * that already has its H1 elsewhere.
+ *
+ * `crumbs` renders the breadcrumb trail over the image, above the H1 — the placement the task
+ * document asks for on subpages.
+ */
+function HeroBlock({
+  data,
+  heading,
+  crumbs,
+}: {
+  data: HeroSection
+  /** Render the title as this page's <h1>. */
+  heading?: boolean
+  /** Breadcrumb trail placed above the title, inside the overlay. */
+  crumbs?: ReactNode
+}) {
   const hasMedia = !!(data.video || data.images.length || data.mobileImages.length)
-  if (!hasMedia && !data.title) return null
+  if (!hasMedia && !data.title && !crumbs) return null
+  const Title = heading ? 'h1' : 'p'
   return (
     <section className={`hero${data.video ? ' hero--video' : ''}`}>
       {data.video ? (
@@ -162,10 +213,11 @@ function HeroBlock({ data }: { data: HeroSection }) {
       ) : (
         <HeroSlider images={data.images} mobileImages={data.mobileImages} alt={data.title || 'Ameland Residence'} />
       )}
-      {(data.title || data.subtitle || data.ctaLabel) && (
+      {(data.title || data.subtitle || data.ctaLabel || crumbs) && (
         <div className={`hero-overlay${data.align === 'center' ? ' hero-overlay--center' : ''}`}>
           <div className="container">
-            {data.title && <p className="hero-title">{data.title}</p>}
+            {crumbs}
+            {data.title && <Title className="hero-title">{data.title}</Title>}
             {data.subtitle && <p className="hero-sub">{data.subtitle}</p>}
             {/* `.hero-overlay .btn` geeft de knop hier zijn eigen doorschijnende stijl. */}
             <Cta label={data.ctaLabel} url={data.ctaUrl} />
@@ -176,11 +228,11 @@ function HeroBlock({ data }: { data: HeroSection }) {
   )
 }
 
-function TextBlock({ data }: { data: TextSection }) {
+function TextBlock({ data, suppressTitle, headingLevel }: { data: TextSection; suppressTitle?: boolean; headingLevel?: 1 | 2 }) {
   return (
     <section className="section section-text">
       <div className="container container--narrow">
-        <SectionTitle title={data.title} subtitle={data.subtitle} />
+        <SectionTitle title={data.title} subtitle={data.subtitle} suppressTitle={suppressTitle} headingLevel={headingLevel} />
         {data.paragraphs.map((html, i) => (
           <RichText key={i} html={html} className="prose" />
         ))}
@@ -190,12 +242,12 @@ function TextBlock({ data }: { data: TextSection }) {
   )
 }
 
-function TextImageBlock({ data }: { data: TextImageSection }) {
+function TextImageBlock({ data, suppressTitle, headingLevel }: { data: TextImageSection; suppressTitle?: boolean; headingLevel?: 1 | 2 }) {
   return (
     <section className={`section section-split${data.reverse ? ' is-reverse' : ''}`}>
       <div className="container split">
         <div className="split-text">
-          <SectionTitle title={data.title} subtitle={data.subtitle} />
+          <SectionTitle title={data.title} subtitle={data.subtitle} suppressTitle={suppressTitle} headingLevel={headingLevel} />
           {data.paragraphs.map((html, i) => (
             <RichText key={i} html={html} className="prose" />
           ))}
@@ -347,12 +399,12 @@ const REVIEW_LABELS: Record<string, { more: string; less: string }> = {
 
 /** Beoordelingen uit de content, in een raster dat van vier naar één kolom zakt. Geen horizontale
  *  scrollbalk dus, ook niet met meer dan vier reviews — die schuiven simpelweg naar de volgende rij. */
-function ReviewsBlock({ data, locale }: { data: ReviewsSection; locale: string }) {
+function ReviewsBlock({ data, locale, suppressTitle, headingLevel }: { data: ReviewsSection; locale: string; suppressTitle?: boolean; headingLevel?: 1 | 2 }) {
   const labels = REVIEW_LABELS[locale] || REVIEW_LABELS.nl
   return (
     <section className="section section-reviews">
       <div className="container">
-        <SectionTitle title={data.title} subtitle={data.subtitle} />
+        <SectionTitle title={data.title} subtitle={data.subtitle} suppressTitle={suppressTitle} headingLevel={headingLevel} />
         {data.items.length > 0 && (
           <div className="reviewgrid">
             {data.items.map((review, i) => (
@@ -366,14 +418,16 @@ function ReviewsBlock({ data, locale }: { data: ReviewsSection; locale: string }
   )
 }
 
-function CardsBlock({ data }: { data: CardsSection }) {
+function CardsBlock({ data, suppressTitle, headingLevel }: { data: CardsSection; suppressTitle?: boolean; headingLevel?: 1 | 2 }) {
+  // Zonder eigen kop boven het raster zijn de kaarttitels de eerste koppen na de <h1>: dan <h2>.
+  const cardLevel: 2 | 3 = suppressTitle || !data.title ? 2 : 3
   return (
     <section className="section section-cards">
       <div className="container">
-        <SectionTitle title={data.title} />
+        <SectionTitle title={data.title} suppressTitle={suppressTitle} headingLevel={headingLevel} />
         {/* Deze banners staan er op de bestaande site met het labelblok in de foto, net als de
             villakaarten — titel op het beeld, alleen de link eronder. */}
-        <CardGrid items={data.items} columns={Math.min(data.items.length, 3)} variant="overlay" />
+        <CardGrid items={data.items} columns={Math.min(data.items.length, 3)} variant="overlay" level={cardLevel} />
       </div>
     </section>
   )
@@ -417,7 +471,25 @@ function BannersBlock({ data }: { data: BannersSection }) {
 
 /** Villa/blog cards straight from the collection file — new key in JSON, new card here. Detail URLs
  *  are nested under the hub (`ctx.villaBase`/`ctx.blogBase`), which differs per language. */
-function CollectionBlock({ source, title, linkLabel, marquee, ctx }: { source: 'villas' | 'blogs'; title: string; linkLabel: string; marquee?: boolean; ctx: RenderCtx }) {
+function CollectionBlock({
+  source,
+  title,
+  linkLabel,
+  marquee,
+  ctx,
+  suppressTitle,
+  headingLevel,
+}: {
+  source: 'villas' | 'blogs'
+  title: string
+  linkLabel: string
+  marquee?: boolean
+  ctx: RenderCtx
+  /** This section's title became the page <h1>, so the cards move up to <h2>. */
+  suppressTitle?: boolean
+  /** Render this section's own title as the page <h1> (hub page without a hero). */
+  headingLevel?: 1 | 2
+}) {
   const items: Card[] =
     source === 'villas'
       ? Object.entries(ctx.villas).map(([slug, v]) => ({
@@ -440,17 +512,21 @@ function CollectionBlock({ source, title, linkLabel, marquee, ctx }: { source: '
   // die halfleeg heen en weer kruipt.
   const asMarquee = marquee && items.length >= 4
 
+  // Zonder eigen kop boven het raster zijn de kaarttitels de eerste koppen na de <h1>: dan <h2>.
+  // Is de kop hier juist de <h1> (hub-pagina zonder hero), dan blijven de kaarten <h2>.
+  const cardLevel: 2 | 3 = suppressTitle || !title || headingLevel === 1 ? 2 : 3
+
   return (
     <section className="section section-cards">
-      {title && (
+      {title && !suppressTitle && (
         <div className="container">
-          <SectionTitle title={title} />
+          <SectionTitle title={title} headingLevel={headingLevel} />
         </div>
       )}
       {/* De band loopt van rand tot rand, zodat de volgende kaart aangesneden in beeld staat. */}
-      {asMarquee ? <CardMarquee items={items} variant={variant} /> : (
+      {asMarquee ? <CardMarquee items={items} variant={variant} level={cardLevel} /> : (
         <div className="container">
-          <CardGrid items={items} columns={3} variant={variant} />
+          <CardGrid items={items} columns={3} variant={variant} level={cardLevel} />
         </div>
       )}
     </section>
@@ -570,7 +646,9 @@ function SitemapBlock({ ctx }: { ctx: RenderCtx }) {
       <div className="container sitemap-grid">
         {groups.map((g) => (
           <div key={g.heading}>
-            <h3>{g.heading}</h3>
+            {/* <h2>, niet <h3>: dit zijn de eerste koppen ná de <h1> van de pagina, dus een <h3>
+                sloeg een niveau over. De opmaak blijft gelijk (zie `.sitemap-grid h2` in de CSS). */}
+            <h2>{g.heading}</h2>
             <ul>
               {g.links.map((l) => (
                 <li key={l.url}><LocaleLink href={l.url}>{l.label}</LocaleLink></li>
@@ -585,16 +663,28 @@ function SitemapBlock({ ctx }: { ctx: RenderCtx }) {
 
 /* ---------------------------------------------------------------- dispatch */
 
-export function SectionView({ section, ctx }: { section: Section; ctx: RenderCtx }) {
+/** Per-section render options set by the page route, not by the content. */
+export type SectionOpts = {
+  /** Render this hero's title as the page <h1> (exactly one section per page). */
+  heading?: boolean
+  /** Breadcrumb trail to place inside this hero's overlay. */
+  crumbs?: ReactNode
+  /** Hide this section's own <h2> because its text was promoted to the page <h1>. */
+  suppressTitle?: boolean
+  /** Render this section's own title as <h1> — for pages with no hero to host the heading. */
+  headingLevel?: 1 | 2
+}
+
+export function SectionView({ section, ctx, opts }: { section: Section; ctx: RenderCtx; opts?: SectionOpts }) {
   switch (section.type) {
-    case 'hero': return <HeroBlock data={section} />
-    case 'text': return <TextBlock data={section} />
-    case 'textImage': return <TextImageBlock data={section} />
+    case 'hero': return <HeroBlock data={section} heading={opts?.heading} crumbs={opts?.crumbs} />
+    case 'text': return <TextBlock data={section} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
+    case 'textImage': return <TextImageBlock data={section} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
     case 'columns': return <ColumnsBlock data={section} locale={ctx.locale} />
-    case 'cards': return <CardsBlock data={section} />
-    case 'reviews': return <ReviewsBlock data={section} locale={ctx.locale} />
+    case 'cards': return <CardsBlock data={section} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
+    case 'reviews': return <ReviewsBlock data={section} locale={ctx.locale} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
     case 'banners': return <BannersBlock data={section} />
-    case 'collection': return <CollectionBlock source={section.source} title={section.title} linkLabel={section.linkLabel} marquee={section.marquee} ctx={ctx} />
+    case 'collection': return <CollectionBlock source={section.source} title={section.title} linkLabel={section.linkLabel} marquee={section.marquee} ctx={ctx} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
     case 'gallery': return <GalleryBlock data={section} />
     case 'features': return <FeaturesBlock data={section} />
     case 'booking': return <BookingBlock widget={section.widget} accommodationId={section.accommodationId} ctx={ctx} />
@@ -604,11 +694,23 @@ export function SectionView({ section, ctx }: { section: Section; ctx: RenderCtx
   }
 }
 
-export function Sections({ sections, ctx }: { sections: Section[]; ctx: RenderCtx }) {
+/**
+ * Render a page's section list. `opts` maps a section INDEX to render options, which is how the page
+ * routes place the <h1> and the breadcrumbs without the content having to know about either.
+ */
+export function Sections({
+  sections,
+  ctx,
+  opts,
+}: {
+  sections: Section[]
+  ctx: RenderCtx
+  opts?: Record<number, SectionOpts>
+}) {
   return (
     <>
       {sections.map((s, i) => (
-        <SectionView key={`${s.type}-${i}`} section={s} ctx={ctx} />
+        <SectionView key={`${s.type}-${i}`} section={s} ctx={ctx} opts={opts?.[i]} />
       ))}
     </>
   )
@@ -617,10 +719,14 @@ export function Sections({ sections, ctx }: { sections: Section[]; ctx: RenderCt
 /* ----------------------------------------------------------- page layouts */
 
 /** Villa detail: hero → USP strip → intro + highlights → gallery → indeling → booking → extras. */
-export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx }) {
+export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: RenderCtx; crumbs?: ReactNode }) {
+  const { locale } = ctx
   return (
     <>
-      <HeroBlock data={{ type: 'hero', title: '', ctaLabel: '', ctaUrl: '', video: '', mobileVideo: '', images: villa.hero.images, mobileImages: villa.hero.mobileImages }} />
+      <HeroBlock
+        data={{ type: 'hero', title: '', ctaLabel: '', ctaUrl: '', video: '', mobileVideo: '', images: villa.hero.images, mobileImages: villa.hero.mobileImages }}
+        crumbs={crumbs}
+      />
 
       {villa.usps.length > 0 && (
         <section className="uspbar">
@@ -643,7 +749,7 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
               <RichText key={i} html={html} className="prose" />
             ))}
             {villa.moreParagraphs.length > 0 && (
-              <ReadMore moreLabel="Lees meer" lessLabel="Lees minder">
+              <ReadMore moreLabel={t(locale, 'readMore')} lessLabel={t(locale, 'readLess')}>
                 {villa.moreParagraphs.map((html, i) => (
                   <RichText key={i} html={html} className="prose" />
                 ))}
@@ -652,14 +758,14 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
           </div>
           {villa.highlights.length > 0 && (
             <aside className="villa-highlights">
-              <h3>Goed om te weten</h3>
+              <h2>{t(locale, 'goodToKnow')}</h2>
               <ul>
                 {villa.highlights.map((h) => (
                   <li key={h}><Icon name="check" size={15} /><span>{h}</span></li>
                 ))}
               </ul>
               <a className="btn btn-primary" href="#boeken">
-                Bekijk beschikbaarheid
+                {t(locale, 'checkAvailability')}
                 <Icon name="calendar" size={16} />
               </a>
             </aside>
@@ -676,11 +782,14 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
 }
 
 /** Blog article: image + title + heading/paragraph body, then a villa grid as the conversion step. */
-export function BlogPage({ blog, ctx }: { blog: BlogContent; ctx: RenderCtx }) {
+export function BlogPage({ blog, ctx, crumbs }: { blog: BlogContent; ctx: RenderCtx; crumbs?: ReactNode }) {
+  const { locale } = ctx
   return (
     <>
       <article className="section article">
         <div className="container container--narrow">
+          {/* Geen hero-afbeelding op een artikel: het kruimelpad staat op de lichte achtergrond. */}
+          {crumbs && <div className="crumbs--standalone">{crumbs}</div>}
           <h1>{blog.title}</h1>
           {blog.excerpt && <p className="article-lead">{blog.excerpt}</p>}
           {blog.image && (
@@ -698,7 +807,7 @@ export function BlogPage({ blog, ctx }: { blog: BlogContent; ctx: RenderCtx }) {
           ))}
         </div>
       </article>
-      <CollectionBlock source="villas" title="Onze villa's" linkLabel="Meer informatie" ctx={ctx} />
+      <CollectionBlock source="villas" title={t(locale, 'ourVillas')} linkLabel={t(locale, 'moreInfo')} ctx={ctx} />
     </>
   )
 }
