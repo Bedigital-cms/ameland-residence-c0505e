@@ -366,6 +366,20 @@
     "title": "Last minute Ameland | Ameland Residence",
     "sections": [
       {
+        "type": "hero",
+        "title": "",
+        "ctaLabel": "",
+        "ctaUrl": "",
+        "video": "",
+        "mobileVideo": "",
+        "images": [
+          "/media/ameland-residence-20260730-21765c-header-desktop-ameland-residence04-2.jpg"
+        ],
+        "mobileImages": [
+          "/media/ameland-residence-20260730-6d2a21-header-mobile-ameland-residence04-2.jpg"
+        ]
+      },
+      {
         "type": "text",
         "title": "Last minute naar Ameland? Boek nu een luxe vakantievilla!",
         "subtitle": "",
@@ -380,16 +394,6 @@
         "type": "booking",
         "widget": "zoeken",
         "accommodationId": ""
-      },
-      {
-        "type": "hero",
-        "title": "",
-        "ctaLabel": "",
-        "ctaUrl": "",
-        "video": "",
-        "mobileVideo": "",
-        "images": [],
-        "mobileImages": []
       },
       {
         "type": "textImage",
@@ -696,7 +700,7 @@
         "title": "Reizen naar Ameland Residence",
         "subtitle": "Veerboot naar Ameland",
         "paragraphs": [
-            "Een verblijf bij Ameland Residence begint met een ontspannen reis naar het eiland. Of u nu met de auto, fiets of het openbaar vervoer reist, er zijn diverse mogelijkheden om Ameland te bereiken en uw vakantie in luxe te beginnen.​",
+          "Een verblijf bij Ameland Residence begint met een ontspannen reis naar het eiland. Of u nu met de auto, fiets of het openbaar vervoer reist, er zijn diverse mogelijkheden om Ameland te bereiken en uw vakantie in luxe te beginnen.​",
           "<h2>Veerboot naar Ameland</h2>",
           "<br>De meest gebruikelijke manier om Ameland te bereiken is via de veerboot vanuit Holwerd. Wagenborg Passagiersdiensten verzorgt deze overtocht.​ <a href=\"https://www.wpd.nl/ameland/veerdienst/\">Klik hier</a> om uw tickets te reserveren.",
           "<ul><li>Duur overtocht - Ongeveer 50 minuten<br></li><li>Reserveren - Vooral in het hoogseizoen is het aan te raden om tijdig te reserveren, met name als u uw auto wilt meenemen.<br></li><li>Voertuigen - Beperkte capaciteit voor auto's, vroegtijdig reserveren is essentieel.​</li></ul>",

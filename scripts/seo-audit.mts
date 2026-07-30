@@ -137,16 +137,23 @@ else console.log(`  ok   all ${rows.length} pages have a canonical`)
  * NOTE ON WHAT "self-referencing" MEANS HERE.
  *
  * The built route path is /<locale>/<slug> because this build ran WITHOUT per-domain mode (that is
- * staging's behaviour). The canonical is generated for the mode the site is configured for, and
- * `NEXT_PUBLIC_SITE_URL` was set to the production origin for this build. So the canonical legitimately
- * differs from the route path — comparing them directly is wrong.
+ * staging's behaviour). The canonical is generated for the mode the site is configured for, so it can
+ * legitimately differ from the route path — comparing them directly is wrong.
  *
- * What must hold is that the canonical path equals what `lib/urls.publicPath` would produce for this
+ * What must hold is that the canonical PATH equals what `lib/urls.publicPath` would produce for this
  * locale + content path. With domainLocales OFF that is /<locale>/<slug>, i.e. identical to the route.
+ *
+ * The canonical may be absolute OR root-relative, and both are correct. `lib/urls.siteOrigin` returns
+ * "" when neither `NEXT_PUBLIC_SITE_URL` nor per-domain mode is configured — which is the case for a
+ * plain `pnpm verify` — and callers then emit root-relative URLs deliberately. So parse the path out
+ * without assuming an origin is present; `new URL(r.canonical)` alone throws on "/de".
  */
+const canonicalPath = (href: string) =>
+  /^https?:\/\//i.test(href) ? new URL(href).pathname : new URL(href, 'https://x.invalid').pathname
+
 const selfMismatch = rows.filter((r) => {
   if (!r.canonical) return false
-  return new URL(r.canonical).pathname.replace(/\/$/, '') !== r.url.replace(/\/$/, '')
+  return canonicalPath(r.canonical).replace(/\/$/, '') !== r.url.replace(/\/$/, '')
 })
 if (selfMismatch.length) {
   fail(`${selfMismatch.length} canonical(s) whose path != their own route path:`)
@@ -167,7 +174,8 @@ for (const r of rows) {
   for (const [code, href] of Object.entries(r.hreflang)) {
     if (code === 'x-default') continue
     // The alternate href is already a full route path in this build mode (/nl/x, /de/x) — use it as-is.
-    const target = new URL(href).pathname.replace(/\/$/, '') || '/'
+    // Like the canonical, it is absolute or root-relative depending on whether an origin is configured.
+    const target = canonicalPath(href).replace(/\/$/, '') || '/'
     const other = byPath.get(target)
     if (!other) { console.log(`  WARN ${r.url}: alternate ${code} -> ${href} has no built page`); hrefIssues++; continue }
     const back = Object.entries(other.hreflang).find(([c]) => c.split('-')[0] === r.locale)

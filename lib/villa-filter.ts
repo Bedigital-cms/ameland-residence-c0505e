@@ -1,41 +1,29 @@
 /**
  * Villa overview filters — the attribute set, and how a villa's values are resolved.
  *
- * DESIGNED TO SURVIVE THE CMS UPGRADE.
+ * Four filters are live: GUESTS, BEDROOMS, pets and location. All combine with AND.
  *
- * The task document asks to filter on guests, bedrooms, sauna, pets, location and EV charging. Today
- * `VillaContent` has no numeric or boolean fields, so values are parsed out of each villa's own prose by
- * `villaFacts`. That parsing is unreliable for two of the attributes (measured, see below), so those two
- * filters are switched OFF rather than shipped broken.
+ * Every value resolves through ONE function, `villaAttributes()`, which reads `villa.guests ??
+ * facts.guests` — the numeric field the content now carries, falling back to the prose parse in
+ * `villa-facts.ts` for anything not filled in. The fallback is what keeps a half-populated collection
+ * degrading villa by villa instead of failing as a whole.
  *
- * Everything sits behind ONE function — `villaAttributes()`, which now reads `villa.guests ??
- * facts.guests`: the CMS field when it exists, the prose parse when it does not. The wiring is DONE.
+ * GUESTS AND BEDROOMS WERE SWITCHED OFF UNTIL THE NUMBERS EXISTED, and the reason is worth keeping:
+ * parsed from prose, capacity resolved on only 4 of 10 pages, and bedrooms gave 4,4,4,4,3 in Dutch but
+ * 4,3,-,1,3 in German for the SAME five houses (the German checklists lost their bedroom rows in
+ * migration). Filtering on a number that is absent on six pages, or contradicts itself between
+ * languages, is worse than not offering the filter. The client has since supplied the authoritative
+ * figures (`scripts/set-villa-numbers.mts`), which resolve both problems in the Dutch content's favour.
  *
- * WHAT IS LEFT is data, not code. `guests` / `bedrooms` / `bathrooms` are declared on `VillaContent` and
- * the CMS renders inputs for them automatically, but no villa carries a value yet. The moment the numbers
- * are filled in for all ten villas in BOTH languages, flip `enabled: true` on the two definitions below
- * and the filters appear. The UI, the URL contract, the no-JavaScript behaviour and the crawlable links
- * need no change — that is the point of doing the wiring ahead of the data.
- *
- * Note the flags are NOT auto-derived from "is the field populated". A filter that materialises halfway
- * through data entry would ship a control that silently hides villas whose number is still missing.
- * Turning it on stays a deliberate act, taken once the data is known to be complete.
- *
- * WHY sauna AND EV CHARGING ARE NOT FILTERS
+ * WHY sauna AND EV CHARGING ARE STILL NOT FILTERS
  *
  * Measured across all ten villa pages: both are true on 10/10. A filter that never excludes anything is
  * not a filter — it is a button that reloads the page. They stay visible as facts on the cards instead.
  *
- * WHY guests IS OFF
- *
- * Stated on 1 of 10 pages (`nl/villa-zee`, "Luxe 8-persoons duinvilla"). Filtering on it would hide nine
- * villas that simply do not mention a number.
- *
- * WHY bedrooms IS OFF
- *
- * The Dutch pages parse consistently (4,4,4,4,3) but the German ones give 4,3,-,1,3 for the SAME five
- * houses, because the German checklists lost their bedroom lines in migration. Filtering on a number that
- * is wrong per language is worse than not offering it.
+ * THE URL IS THE STATE. Every filter reads and writes a query parameter, so each combination is a real,
+ * bookmarkable, crawlable URL and the whole overview keeps working with JavaScript disabled — the brief
+ * requires all villas and their links to stay in the HTML. Capacity is composed with a stepper rather
+ * than a chip (`chip: false`), but it obeys the identical contract.
  */
 import type { VillaContent } from './types'
 import { villaFacts } from './villa-facts'
@@ -85,6 +73,14 @@ export type VillaFilter = {
   labelKey: 'filterPets' | 'filterLocation' | 'filterGuests' | 'filterBedrooms'
   /** Whether to render it. */
   enabled: boolean
+  /**
+   * Whether the chip row renders this filter. Defaults to true.
+   *
+   * `false` means the filter is live and combines like any other, but a different control drives it —
+   * guest capacity is composed with a stepper, so a row of "2, 3, 4… persons" chips beside it would be
+   * a second, contradictory way to set the same parameter.
+   */
+  chip?: boolean
   /** Does this villa match the given filter value? */
   matches: (attrs: VillaAttributes, value: string) => boolean
   /** The distinct values present across the collection, in display order. */
@@ -112,29 +108,44 @@ export const VILLA_FILTERS: VillaFilter[] = [
     valueLabel: (v) => v,
   },
   {
-    // OFF until every villa carries a `guests` number in both languages. The prose fallback resolves it
-    // on only 4 of 10 pages, so enabling now would hide six villas that simply never state a capacity.
+    /**
+     * Guest capacity — "sleeps at least N".
+     *
+     * Rendered by the stepper (`GuestPartyPicker`), not as a chip, because the visitor composes a party
+     * of adults + children + babies rather than picking a single number. The definition stays here so
+     * the URL contract, the AND-combination and the no-JavaScript path are identical to every other
+     * filter; `chip: false` only says the chip row must not also render it.
+     */
     id: 'personen',
     labelKey: 'filterGuests',
-    enabled: false,
-    matches: (a, v) => !!a.guests && a.guests >= Number(v),
-    values: (all) => [...new Set(all.map((a) => a.guests).filter((n): n is number => !!n))].sort((x, y) => x - y).map(String),
+    enabled: true,
+    chip: false,
+    matches: (a, v) => a.guests !== undefined && a.guests >= Number(v),
+    values: (all) => [...new Set(all.map((a) => a.guests).filter((n): n is number => n !== undefined))].sort((x, y) => x - y).map(String),
   },
   {
-    // OFF until every villa carries a `bedrooms` number in both languages. The prose fallback gives
-    // 4,4,4,4,3 in Dutch but 4,3,-,1,3 in German for the SAME five houses — a per-language contradiction
-    // the numeric field is meant to settle (see the cross-language check in villa-facts-test.mts).
+    /**
+     * Bedrooms — "at least N", per the brief. The label says so explicitly ("4+ slaapkamers"), because
+     * "4 slaapkamers" on an at-least filter reads as exact and would make Watersnip's absence look
+     * like a bug rather than the rule working.
+     */
     id: 'slaapkamers',
     labelKey: 'filterBedrooms',
-    enabled: false,
-    matches: (a, v) => !!a.bedrooms && a.bedrooms >= Number(v),
-    values: (all) => [...new Set(all.map((a) => a.bedrooms).filter((n): n is number => !!n))].sort((x, y) => x - y).map(String),
+    enabled: true,
+    matches: (a, v) => a.bedrooms !== undefined && a.bedrooms >= Number(v),
+    values: (all) => [...new Set(all.map((a) => a.bedrooms).filter((n): n is number => n !== undefined))].sort((x, y) => x - y).map(String),
+    valueLabel: (v) => `${v}+`,
   },
 ]
 
-/** The filters that actually render, given what the current collection supports. */
+/**
+ * The filters that actually render as CHIPS, given what the current collection supports.
+ *
+ * A filter with a single possible value is dropped: "Nes" alone excludes nothing, so it would be a
+ * button that reloads the page. Guest capacity is excluded via `chip: false` — the stepper drives it.
+ */
 export function activeVillaFilters(all: VillaAttributes[]): VillaFilter[] {
-  return VILLA_FILTERS.filter((f) => f.enabled && f.values(all).length > 0)
+  return VILLA_FILTERS.filter((f) => f.enabled && f.chip !== false && f.values(all).length > 0)
 }
 
 /**

@@ -25,6 +25,7 @@ import { featureText } from '@/lib/features'
 import { relatedArticles } from '@/lib/related'
 import { t } from '@/lib/ui-text'
 import { villaFacts } from '@/lib/villa-facts'
+import { villaAttributes } from '@/lib/villa-filter'
 
 import Form, { type FormDef } from './Form'
 import { RelatedArticles } from './RelatedArticles'
@@ -583,17 +584,23 @@ function CollectionBlock({
    * only reports what a villa's own page states, so the row differs per villa and is omitted where the
    * content is silent — no guessed occupancy, no invented amenities.
    *
-   * Guests and bedrooms are deliberately NOT shown here even where available: capacity is stated on only
-   * one of the ten villa pages, so a card row containing it would look broken next to nine cards without
-   * it. Sauna / pets / EV / location are stated on all of them, which is what makes them usable as a
-   * consistent card row (and as filters later, once the CMS gains real numeric fields).
+   * GUESTS AND BEDROOMS LEAD THE ROW, now that every villa states both. They were previously omitted
+   * because capacity was stated on one villa page of ten, so a card showing it beside nine that could
+   * not would have looked broken. With the numbers in the content that no longer applies — and a guest
+   * filter whose results do not show a capacity leaves the visitor unable to see why a villa matched.
+   *
+   * They still come from `villaAttributes`, so a villa missing a number simply omits that item rather
+   * than printing a guess.
    */
   const cardFacts: Record<string, CardFact[]> | undefined =
     source === 'villas'
       ? Object.fromEntries(
           Object.entries(ctx.villas).map(([slug, v]) => {
             const f = villaFacts(v)
+            const n = villaAttributes(v)
             const row: CardFact[] = []
+            if (n.guests) row.push({ icon: 'users', label: `${n.guests} ${t(ctx.locale, 'guestsUnit')}` })
+            if (n.bedrooms) row.push({ icon: 'bed', label: `${n.bedrooms} ${t(ctx.locale, 'bedroomsUnit')}` })
             if (f.locality) row.push({ icon: 'pin', label: f.locality })
             if (f.sauna) row.push({ icon: 'sauna', label: t(ctx.locale, 'sauna') })
             if (f.petsAllowed === true) row.push({ icon: 'paw', label: t(ctx.locale, 'petsAllowed') })
@@ -898,6 +905,8 @@ export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: Re
   const otherSections = villa.extraSections.filter((s) => !faqSections.includes(s))
 
   const facts = villaFacts(villa)
+  // Numeric content fields first, prose parse as fallback — see VillaKeyFacts.
+  const numbers = villaAttributes(villa)
   const nav = villaNavItems(locale, {
     gallery: villa.gallery.length > 0,
     layout: villa.features.length > 0,
@@ -926,7 +935,7 @@ export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: Re
         </section>
       )}
 
-      <VillaKeyFacts locale={locale} facts={facts} />
+      <VillaKeyFacts locale={locale} facts={facts} numbers={numbers} />
       <VillaNav locale={locale} items={nav} />
 
       <section className="section section-villa-intro" id={VILLA_SECTIONS.about}>

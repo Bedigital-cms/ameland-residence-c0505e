@@ -1,29 +1,41 @@
 import { t } from '@/lib/ui-text'
 import type { VillaFacts } from '@/lib/villa-facts'
+import type { VillaAttributes } from '@/lib/villa-filter'
 
 import { Icon } from './icons'
 
 /**
  * The at-a-glance facts strip near the top of a villa page.
  *
- * The task document asks for "key features displayed near the top" and "scannable facilities". Today a
- * visitor has to read three paragraphs and a 28-item checklist to learn how many bedrooms a house has.
+ * The task document asks for "key features displayed near the top" and "scannable facilities". Without
+ * it a visitor has to read three paragraphs and a 28-item checklist to learn how many bedrooms a house
+ * has.
  *
- * EVERY VALUE COMES FROM `villaFacts`, which only reports what the villa's own page states — see
- * `lib/villa-facts.ts`. That has a visible consequence: guest capacity is stated on exactly one of the
- * ten villa pages, so nine of them show no guest tile. A tile is omitted rather than guessed, because a
- * wrong occupancy figure on an accommodation page is worse than a missing one. (Filling that gap needs a
- * real numeric field in the CMS — the open question in SEO-AUDIT.md.)
+ * TWO SOURCES, deliberately. The numbers come from `numbers` (`villaAttributes` — the villa's numeric
+ * content fields, falling back to the prose parse); everything else from `facts` (`villaFacts`, which
+ * reports only what the page states verbatim). Reading the numbers from `facts` too is what previously
+ * left nine of ten villas with no guest tile, because capacity was stated in prose on exactly one page.
+ *
+ * A tile is still omitted rather than guessed: a wrong occupancy on an accommodation page is worse than
+ * a missing one.
  *
  * Pets are the one tri-state: shown as allowed OR not allowed when the page says so, hidden when silent.
  */
-export function VillaKeyFacts({ locale, facts }: { locale: string; facts: VillaFacts }) {
+export function VillaKeyFacts({
+  locale,
+  facts,
+  numbers,
+}: {
+  locale: string
+  facts: VillaFacts
+  numbers: VillaAttributes
+}) {
   type Tile = { icon: string; label: string; value: string }
   const tiles: Tile[] = []
 
-  if (facts.guests) tiles.push({ icon: 'users', label: t(locale, 'guests'), value: String(facts.guests) })
-  if (facts.bedrooms) tiles.push({ icon: 'bed', label: t(locale, 'bedrooms'), value: String(facts.bedrooms) })
-  if (facts.bathrooms) tiles.push({ icon: 'bath', label: t(locale, 'bathrooms'), value: String(facts.bathrooms) })
+  if (numbers.guests) tiles.push({ icon: 'users', label: t(locale, 'guests'), value: String(numbers.guests) })
+  if (numbers.bedrooms) tiles.push({ icon: 'bed', label: t(locale, 'bedrooms'), value: String(numbers.bedrooms) })
+  if (numbers.bathrooms) tiles.push({ icon: 'bath', label: t(locale, 'bathrooms'), value: String(numbers.bathrooms) })
   if (facts.sauna) tiles.push({ icon: 'sauna', label: t(locale, 'sauna'), value: t(locale, 'yes') })
   if (facts.petsAllowed !== undefined) {
     tiles.push({

@@ -623,6 +623,20 @@
     "title": "Last Minute Ameland | Ameland Residence",
     "sections": [
       {
+        "type": "hero",
+        "title": "",
+        "ctaLabel": "",
+        "ctaUrl": "",
+        "video": "",
+        "mobileVideo": "",
+        "images": [
+          "/media/ameland-residence-20260730-21765c-header-desktop-ameland-residence04-2.jpg"
+        ],
+        "mobileImages": [
+          "/media/ameland-residence-20260730-6d2a21-header-mobile-ameland-residence04-2.jpg"
+        ]
+      },
+      {
         "type": "text",
         "title": "Last Minute nach Ameland? Buchen Sie jetzt eine luxuriöse Ferienvilla!",
         "subtitle": "",

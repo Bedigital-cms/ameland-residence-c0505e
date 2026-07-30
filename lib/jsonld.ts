@@ -20,6 +20,7 @@
 import type { BlogContent, SiteContent, VillaContent } from './types'
 import { absoluteUrl, siteOrigin } from './urls'
 import { villaFacts } from './villa-facts'
+import { villaAttributes } from './villa-filter'
 
 /** A JSON-LD node. Loose by design — shapes vary per @type. */
 export type JsonLd = Record<string, unknown>
@@ -118,10 +119,15 @@ export function breadcrumbList(locale: string, trail: { name: string; path: stri
 /**
  * VacationRental for a villa page.
  *
- * Text comes from the villa's own `cardText`/`paragraphs`; images from its hero + gallery. The
- * numeric and boolean facts (occupancy, bedrooms, bathrooms, pets, sauna, parking, EV charging) are
- * read out of the villa's own `features`/`highlights`/`usps` lines by `villaFacts`, which only
- * reports a fact it can state verbatim from the content and omits everything else.
+ * Text comes from the villa's own `cardText`/`paragraphs`; images from its hero + gallery.
+ *
+ * The NUMBERS (occupancy, bedrooms, bathrooms) come from `villaAttributes` — the villa's numeric
+ * content fields, falling back to what `villaFacts` can read out of its prose. It must be
+ * `villaAttributes` and not `villaFacts` directly: the fields are the authoritative values, and reading
+ * only the prose published `occupancy` on one villa of five while the content stated it on all five.
+ *
+ * Everything else (pets, sauna, parking, EV charging, locality, amenities) still comes from
+ * `villaFacts`, which reports only what it can state verbatim from the content and omits the rest.
  *
  * Deliberately absent: price, availability, rating, review count. That data is not on the page.
  */
@@ -133,6 +139,8 @@ export function vacationRental(
   site: SiteContent,
 ): JsonLd {
   const facts = villaFacts(villa)
+  // Numeric fields first, prose parse second — see the note above.
+  const numbers = villaAttributes(villa)
   const url = absoluteUrl(locale, path)
 
   const amenities = facts.amenities.map((a) =>
@@ -159,10 +167,12 @@ export function vacationRental(
       addressCountry: 'NL',
     }),
     containedInPlace: compact({ '@type': 'Place', name: facts.locality ? `${facts.locality}, Ameland` : 'Ameland' }),
-    numberOfRooms: facts.bedrooms,
-    numberOfBedrooms: facts.bedrooms,
-    numberOfBathroomsTotal: facts.bathrooms,
-    occupancy: facts.guests ? { '@type': 'QuantitativeValue', value: facts.guests, unitText: 'guests' } : undefined,
+    numberOfRooms: numbers.bedrooms,
+    numberOfBedrooms: numbers.bedrooms,
+    numberOfBathroomsTotal: numbers.bathrooms,
+    occupancy: numbers.guests
+      ? { '@type': 'QuantitativeValue', value: numbers.guests, unitText: 'guests' }
+      : undefined,
     petsAllowed: facts.petsAllowed,
     amenityFeature: amenities,
     provider: { '@id': orgId(locale) },

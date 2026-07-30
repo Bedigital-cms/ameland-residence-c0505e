@@ -257,7 +257,10 @@
       "ogImage": "",
       "robots": "index, follow"
     },
-    "linkLabel": "Mehr Informationen"
+    "linkLabel": "Mehr Informationen",
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 2
   },
   "villa-stern": {
     "title": "Villa Stern",
@@ -508,7 +511,10 @@
       "ogImage": "",
       "robots": "index, follow"
     },
-    "linkLabel": "Mehr Informationen"
+    "linkLabel": "Mehr Informationen",
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 1
   },
   "villa-zilt": {
     "title": "Villa Zilt",
@@ -764,7 +770,10 @@
       "ogImage": "",
       "robots": "index, follow"
     },
-    "linkLabel": "Mehr Informationen"
+    "linkLabel": "Mehr Informationen",
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 2
   },
   "villa-nova": {
     "title": "Villa Nova",
@@ -1019,7 +1028,10 @@
       "ogImage": "",
       "robots": "index, follow"
     },
-    "linkLabel": "Mehr Informationen"
+    "linkLabel": "Mehr Informationen",
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 2
   },
   "luxesbungalow-watersnip": {
     "title": "Luxusbungalow Watersnip",
@@ -1134,6 +1146,9 @@
       "ogImage": "",
       "robots": "index, follow"
     },
-    "linkLabel": "Mehr Informationen"
+    "linkLabel": "Mehr Informationen",
+    "guests": 6,
+    "bedrooms": 3,
+    "bathrooms": 1
   }
 }

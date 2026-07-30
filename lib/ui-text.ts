@@ -44,6 +44,20 @@ const UI = {
     villaCountAll: "{n} villa's",
     villaCountFiltered: "{n} van {total} villa's",
     noVillas: "Geen villa's gevonden met deze combinatie.",
+    // Villa overview — guest composition
+    partyTitle: 'Reisgezelschap',
+    partyAdults: 'Volwassenen',
+    partyAdultsAge: 'vanaf 18 jaar',
+    partyChildren: 'Kinderen',
+    partyChildrenAge: '2 t/m 18 jaar',
+    partyBabies: 'Baby’s',
+    partyBabiesAge: 'tot 2 jaar, tellen niet mee',
+    partyIncrease: '{field} toevoegen',
+    partyDecrease: '{field} verwijderen',
+    partyMaxReached: 'Maximaal {n} personen (baby’s niet meegerekend).',
+    // Kaartfeiten: "8 personen", "4 slaapkamers" — het getal staat ervoor.
+    guestsUnit: 'personen',
+    bedroomsUnit: 'slaapkamers',
     allArticles: 'Alle {n} artikelen',
     // Villa detail — key facts
     keyFacts: 'Kenmerken',
@@ -108,6 +122,20 @@ const UI = {
     villaCountAll: '{n} Ferienhäuser',
     villaCountFiltered: '{n} von {total} Ferienhäusern',
     noVillas: 'Keine Ferienhäuser mit dieser Kombination gefunden.',
+    // Villa overview — guest composition
+    partyTitle: 'Reisegruppe',
+    partyAdults: 'Erwachsene',
+    partyAdultsAge: 'ab 18 Jahren',
+    partyChildren: 'Kinder',
+    partyChildrenAge: '2 bis 18 Jahre',
+    partyBabies: 'Babys',
+    partyBabiesAge: 'unter 2 Jahren, zählen nicht mit',
+    partyIncrease: '{field} hinzufügen',
+    partyDecrease: '{field} entfernen',
+    partyMaxReached: 'Maximal {n} Personen (Babys nicht mitgerechnet).',
+    // Kartenfakten: "8 Personen", "4 Schlafzimmer" — die Zahl steht davor.
+    guestsUnit: 'Personen',
+    bedroomsUnit: 'Schlafzimmer',
     allArticles: 'Alle {n} Artikel',
     // Villa detail — key facts
     keyFacts: 'Merkmale',

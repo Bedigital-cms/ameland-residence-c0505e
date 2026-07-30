@@ -20,6 +20,7 @@ export function VillaFilter({
   filters,
   all,
   selected,
+  partyParams,
   total,
   shown,
 }: {
@@ -29,26 +30,46 @@ export function VillaFilter({
   filters: FilterDef[]
   /** Attributes of every villa, used to derive each filter's available values. */
   all: VillaAttributes[]
-  /** filter id -> chosen value. */
+  /** filter id -> chosen value. Includes the derived `personen`, which chip URLs must not carry. */
   selected: Record<string, string>
+  /**
+   * The guest party's own query parameters (`volwassenen` / `kinderen` / `babies`), so a chip link
+   * preserves the stepper. Empty when the party is at its default.
+   */
+  partyParams: Record<string, string>
   total: number
   shown: number
 }) {
-  if (filters.length === 0) return null
-
-  /** URL with one filter set or cleared; omits empties so the clean hub URL stays canonical. */
+  /**
+   * URL with one chip set or cleared, preserving the guest party.
+   *
+   * `selected.personen` is DERIVED from the party (see VillaFilterState) and must never be written into
+   * a chip URL: carrying `?personen=6` without the `?volwassenen=…` it came from would leave the stepper
+   * showing one adult while the grid filtered for six. `partyParams` carries the party's own parameters
+   * instead, so the two stay in step.
+   */
   const href = (patch: Record<string, string>) => {
     const next = { ...selected, ...patch }
-    const params = new URLSearchParams()
+    delete next.personen
+    const params = new URLSearchParams({ ...partyParams })
     for (const [k, v] of Object.entries(next)) if (v) params.set(k, v)
     const qs = params.toString()
     return qs ? `${base}?${qs}` : base
   }
 
+  /**
+   * `selected` includes `personen` when the party is non-default, so the count line and the reset link
+   * both account for the stepper — resetting from a party of 8 returns to all five villas, not to a
+   * chip-cleared URL that still filters by capacity. `base` carries no query string, so the single
+   * reset link clears everything.
+   */
   const isFiltered = Object.values(selected).some(Boolean)
 
   return (
     <div className="villafilter">
+      {/* The chip row can legitimately be empty (a collection where every villa shares one location),
+          but the count and the reset must still render — the stepper above can filter on its own. */}
+      {filters.length > 0 && (
       <nav className="villafilter-row" aria-label={t(locale, 'filterVillas')}>
         <span className="villafilter-label">{t(locale, 'filterVillas')}</span>
         <ul className="villafilter-list">
@@ -85,6 +106,7 @@ export function VillaFilter({
           )}
         </ul>
       </nav>
+      )}
       <p className="villafilter-count" role="status">
         {shown === total
           ? t(locale, 'villaCountAll').replace('{n}', String(total))
