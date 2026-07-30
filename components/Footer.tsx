@@ -43,7 +43,7 @@ export function Footer({ site }: { site: SiteContent }) {
               <div>
                 {site.logo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img className="footer-logo" src={site.logo} alt={site.brandName} />
+                  <img className="footer-logo" src={site.logo} alt={site.brandName} width={200} height={96} loading="lazy" decoding="async" />
                 ) : (
                   <div className="footer-brand-name">
                     <span>Ameland</span>
@@ -64,7 +64,7 @@ export function Footer({ site }: { site: SiteContent }) {
                           het terug op het ingebouwde glyph in een randje. */}
                       {s.icon ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img className="footer-social-icon" src={s.icon} alt="" width={40} height={40} />
+                        <img className="footer-social-icon" src={s.icon} alt="" width={40} height={40} loading="lazy" decoding="async" />
                       ) : (
                         <span className="footer-social-fallback"><Icon name={socialIcon(s.url)} size={18} /></span>
                       )}
@@ -111,7 +111,9 @@ export function Footer({ site }: { site: SiteContent }) {
               <div className="footer-col footer-badge">
                 <div>
                   <LocaleLink href={site.ctaUrl} aria-label={site.ctaLabel}>
-                    <Media src={f.badge} alt={site.brandName} shape="square" label="Label" />
+                    {/* Real intrinsic size of the badge PNG (250x250). `.footer-badge img` uses
+                        `width: auto`, so an inflated attribute width would stretch the column. */}
+                    <Media src={f.badge} alt={site.brandName} shape="square" label="Label" width={250} height={250} />
                   </LocaleLink>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { Suspense, type CSSProperties, type ReactNode } from 'react'
 
 import type {
   BannersSection,
@@ -21,9 +21,16 @@ import type {
   VillaContent,
 } from '@/lib/types'
 
+import { featureText } from '@/lib/features'
+import { relatedArticles } from '@/lib/related'
 import { t } from '@/lib/ui-text'
+import { villaFacts } from '@/lib/villa-facts'
 
 import Form, { type FormDef } from './Form'
+import { RelatedArticles } from './RelatedArticles'
+import { VillaFilterState } from './VillaFilterState'
+import { VillaKeyFacts } from './VillaKeyFacts'
+import { VILLA_SECTIONS, VillaNav, villaNavItems } from './VillaNav'
 import { AlbumSlider } from './AlbumSlider'
 import { Gallery } from './Gallery'
 import { HeroSlider } from './HeroSlider'
@@ -109,17 +116,31 @@ function Cta({ label, url, variant = 'primary' }: { label?: string; url?: string
  */
 type CardVariant = 'overlay' | 'panel'
 
+/** A short, icon-led fact shown on a villa card. Derived from the villa's own text — never invented. */
+export type CardFact = { icon: string; label: string }
+
 /**
  * `level` is the heading level for the card title. It is <h3> when the section above the grid has its
  * own <h2>, but <h2> when that section title was promoted to the page <h1> (villa hub, blog hub) —
  * otherwise the cards would jump h1 -> h3 and skip a level.
  */
-function CardTile({ card, variant, level = 3 }: { card: Card; variant: CardVariant; level?: 2 | 3 }) {
+function CardTile({
+  card,
+  variant,
+  level = 3,
+  facts,
+}: {
+  card: Card
+  variant: CardVariant
+  level?: 2 | 3
+  /** Scannable attributes for a villa card (sauna, pets, EV, location). */
+  facts?: CardFact[]
+}) {
   const H = level === 2 ? 'h2' : 'h3'
   const inner = (
     <>
       <div className="card-media">
-        <Media src={card.image} alt={card.title} shape="card" label="Foto" />
+        <Media src={card.image} alt={card.title} shape="card" label="Foto" sizes="(max-width: 700px) 100vw, (max-width: 900px) 50vw, 33vw" />
         {/* Blijft een kop, ook al ziet het uit als een label — anders verdwijnt de titel uit de
             documentstructuur en hoort een schermlezer alleen "meer informatie". */}
         {variant === 'overlay' && card.title && <H className="card-label">{card.title}</H>}
@@ -132,6 +153,21 @@ function CardTile({ card, variant, level = 3 }: { card: Card; variant: CardVaria
       )}
       <div className="card-body">
         {variant === 'panel' && card.text && <p>{card.text}</p>}
+        {/*
+          Villakaarten: een compacte feitenrij zodat de kaarten te scannen zijn zonder ze te openen —
+          de opdracht vraagt hier expliciet om. Alleen feiten die de villapagina zelf noemt.
+          `aria-hidden` op de iconen; het label is de tekst.
+        */}
+        {facts && facts.length > 0 && (
+          <ul className="card-facts">
+            {facts.map((f) => (
+              <li key={f.label}>
+                <Icon name={f.icon} size={14} />
+                <span>{f.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         {card.linkLabel && <span className="card-link">{card.linkLabel}<Icon name="arrow" size={15} /></span>}
       </div>
     </>
@@ -144,12 +180,31 @@ function CardTile({ card, variant, level = 3 }: { card: Card; variant: CardVaria
   )
 }
 
-export function CardGrid({ items, columns = 3, variant = 'panel', level }: { items: Card[]; columns?: number; variant?: CardVariant; level?: 2 | 3 }) {
+export function CardGrid({
+  items,
+  columns = 3,
+  variant = 'panel',
+  level,
+  facts,
+}: {
+  items: Card[]
+  columns?: number
+  variant?: CardVariant
+  level?: 2 | 3
+  /** Per-card facts, keyed by the card's url — villa grids pass these, other grids do not. */
+  facts?: Record<string, CardFact[]>
+}) {
   if (!items?.length) return null
   return (
     <div className={`cardgrid cardgrid--${columns}`}>
       {items.map((c, i) => (
-        <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} level={level} />
+        <CardTile
+          key={(c.url || c.title || 'card') + i}
+          card={c}
+          variant={variant}
+          level={level}
+          facts={facts?.[c.url]}
+        />
       ))}
     </div>
   )
@@ -164,8 +219,20 @@ export function CardGrid({ items, columns = 3, variant = 'panel', level }: { ite
  * `aantal kaarten * 5,5s`. De tweede reeks is `aria-hidden`, anders staan alle links dubbel in de
  * toegankelijkheidsboom.
  */
-function CardMarquee({ items, variant, level }: { items: Card[]; variant: CardVariant; level?: 2 | 3 }) {
-  const set = items.map((c, i) => <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} level={level} />)
+function CardMarquee({
+  items,
+  variant,
+  level,
+  facts,
+}: {
+  items: Card[]
+  variant: CardVariant
+  level?: 2 | 3
+  facts?: Record<string, CardFact[]>
+}) {
+  const set = items.map((c, i) => (
+    <CardTile key={(c.url || c.title || 'card') + i} card={c} variant={variant} level={level} facts={facts?.[c.url]} />
+  ))
   return (
     <div className="marquee" style={{ '--marquee-duration': `${items.length * 5.5}s` } as CSSProperties}>
       <div className="marquee-track">
@@ -254,7 +321,7 @@ function TextImageBlock({ data, suppressTitle, headingLevel }: { data: TextImage
           <Cta label={data.ctaLabel} url={data.ctaUrl} />
         </div>
         <div className="split-media">
-          <Media src={data.image} alt={data.title} shape="portrait" label="Foto" />
+          <Media src={data.image} alt={data.title} shape="portrait" label="Foto" sizes="(max-width: 900px) 100vw, 50vw" />
         </div>
       </div>
     </section>
@@ -286,7 +353,7 @@ function ColumnBlockView({ block, locale }: { block: ColumnBlock; locale: string
                 site). Staat er geen pad in de content, dan valt het terug op het vinkje. */}
             {it.icon ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="col-list-icon-img" src={it.icon} alt="" width={compact ? 20 : 32} height={compact ? 20 : 32} />
+              <img className="col-list-icon-img" src={it.icon} alt="" width={compact ? 20 : 32} height={compact ? 20 : 32} loading="lazy" decoding="async" />
             ) : (
               <span className="col-list-icon"><Icon name="check" size={16} /></span>
             )}
@@ -308,7 +375,7 @@ function ColumnBlockView({ block, locale }: { block: ColumnBlock; locale: string
     return <AlbumSlider images={block.images} alt="" locale={locale} />
   }
   if (block.kind === 'video') {
-    return <VideoEmbed videoId={block.videoId} poster={block.poster} title="Ameland Residence" />
+    return <VideoEmbed videoId={block.videoId} poster={block.poster} title="Ameland Residence" playLabel={t(locale, 'playVideo')} />
   }
   if (block.kind === 'faq') {
     return (
@@ -443,7 +510,7 @@ function CardsBlock({ data, suppressTitle, headingLevel }: { data: CardsSection;
  */
 function BannersBlock({ data }: { data: BannersSection }) {
   const strip = data.items.map((b, i) => (
-    <Media key={b.image + i} src={b.image} alt="" shape="portrait" label="Sfeerbeeld" />
+    <Media key={b.image + i} src={b.image} alt="" shape="portrait" label="Sfeerbeeld" sizes="(max-width: 700px) 60vw, 25vw" />
   ))
   const animate = data.items.length > 1
 
@@ -479,6 +546,7 @@ function CollectionBlock({
   ctx,
   suppressTitle,
   headingLevel,
+  filterable,
 }: {
   source: 'villas' | 'blogs'
   title: string
@@ -489,6 +557,8 @@ function CollectionBlock({
   suppressTitle?: boolean
   /** Render this section's own title as the page <h1> (hub page without a hero). */
   headingLevel?: 1 | 2
+  /** Villa hub: render the filter row above the grid. */
+  filterable?: boolean
 }) {
   const items: Card[] =
     source === 'villas'
@@ -506,6 +576,33 @@ function CollectionBlock({
           url: `${ctx.blogBase}/${slug}`,
           linkLabel: b.linkLabel || linkLabel,
         }))
+  /**
+   * Scannable facts on the villa cards.
+   *
+   * The brief asks for cards that can be scanned "using existing, verified information". `villaFacts`
+   * only reports what a villa's own page states, so the row differs per villa and is omitted where the
+   * content is silent — no guessed occupancy, no invented amenities.
+   *
+   * Guests and bedrooms are deliberately NOT shown here even where available: capacity is stated on only
+   * one of the ten villa pages, so a card row containing it would look broken next to nine cards without
+   * it. Sauna / pets / EV / location are stated on all of them, which is what makes them usable as a
+   * consistent card row (and as filters later, once the CMS gains real numeric fields).
+   */
+  const cardFacts: Record<string, CardFact[]> | undefined =
+    source === 'villas'
+      ? Object.fromEntries(
+          Object.entries(ctx.villas).map(([slug, v]) => {
+            const f = villaFacts(v)
+            const row: CardFact[] = []
+            if (f.locality) row.push({ icon: 'pin', label: f.locality })
+            if (f.sauna) row.push({ icon: 'sauna', label: t(ctx.locale, 'sauna') })
+            if (f.petsAllowed === true) row.push({ icon: 'paw', label: t(ctx.locale, 'petsAllowed') })
+            if (f.evCharging) row.push({ icon: 'plug', label: t(ctx.locale, 'evCharging') })
+            return [`${ctx.villaBase}/${slug}`, row]
+          }),
+        )
+      : undefined
+
   // Villa's krijgen het labelblok in de foto, artikelen het zachtgroene tekstvlak — zoals daar.
   const variant: CardVariant = source === 'villas' ? 'overlay' : 'panel'
   // Onder de vier kaartbreedtes valt er niets te schuiven; dan is een raster netter dan een band
@@ -524,42 +621,93 @@ function CollectionBlock({
         </div>
       )}
       {/* De band loopt van rand tot rand, zodat de volgende kaart aangesneden in beeld staat. */}
-      {asMarquee ? <CardMarquee items={items} variant={variant} level={cardLevel} /> : (
+      {asMarquee ? <CardMarquee items={items} variant={variant} level={cardLevel} facts={cardFacts} /> : (
         <div className="container">
-          <CardGrid items={items} columns={3} variant={variant} level={cardLevel} />
+          {/*
+            Op de villa-hub komt er een filterrij boven het raster. Die staat in een client-component,
+            met het VOLLEDIGE raster als Suspense-fallback: zo staat elke villa met zijn link in de
+            statische HTML (eis uit de opdracht), en filtert JS daarna dezelfde lijst.
+          */}
+          {filterable && source === 'villas' ? (
+            <Suspense
+              fallback={<CardGrid items={items} columns={3} variant={variant} level={cardLevel} facts={cardFacts} />}
+            >
+              <VillaFilterState
+                locale={ctx.locale}
+                villas={ctx.villas}
+                base={ctx.villaBase}
+                cards={Object.fromEntries(Object.keys(ctx.villas).map((slug, i) => [slug, items[i]]))}
+                cardFacts={cardFacts ?? {}}
+                cardLevel={cardLevel}
+              />
+            </Suspense>
+          ) : (
+            <CardGrid items={items} columns={3} variant={variant} level={cardLevel} facts={cardFacts} />
+          )}
         </div>
       )}
     </section>
   )
 }
 
-function GalleryBlock({ data }: { data: GallerySection }) {
+/**
+ * `alt` names what the gallery is OF, so tile labels read "Villa Zee — foto 3" instead of "Foto — foto 3".
+ * The lightbox controls are localised; previously they announced Dutch on German pages.
+ */
+function GalleryBlock({ data, locale, alt }: { data: GallerySection; locale: string; alt?: string }) {
   return (
     <section className="section section-gallery">
       <div className="container">
-        <Gallery images={data.images} alt="Foto" />
+        <Gallery
+          images={data.images}
+          alt={alt || t(locale, 'photos')}
+          labels={{
+            close: t(locale, 'close'),
+            prev: t(locale, 'previous'),
+            next: t(locale, 'next'),
+            photo: t(locale, 'photo'),
+          }}
+        />
       </div>
     </section>
   )
 }
 
-export function FeaturesBlock({ data }: { data: FeaturesSection }) {
+/**
+ * The room-by-room checklist.
+ *
+ * `heading` adds an <h2> above the groups. Without it the group headings are <h3>s with no <h2> before
+ * them — a skipped level, and the brief asks for scannable facilities under a clear heading. Villa pages
+ * pass one; a `features` section used standalone in page content does not, and keeps its old shape.
+ *
+ * Long checklists (the villas run to 18 items in one group) are laid out in columns by the CSS rather
+ * than as one tall list, which is what makes them scannable.
+ */
+export function FeaturesBlock({ data, heading }: { data: FeaturesSection; heading?: string }) {
   return (
     <section className="section section-features">
-      <div className="container features">
-        {data.groups.map((g) => (
-          <div className="feature-group" key={g.heading}>
-            <h3>{g.heading}</h3>
-            <ul>
-              {g.items.map((item) => (
-                <li key={item}>
-                  <Icon name="check" size={15} />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <div className="container">
+        {heading && <h2 className="features-title">{heading}</h2>}
+        <div className="features">
+          {data.groups.map((g) => (
+            // 10+ items reads as a long sliver in one column; the CSS splits those into two.
+            <div className={`feature-group${g.items.length >= 10 ? ' feature-group--long' : ''}`} key={g.heading}>
+              <h3>{g.heading}</h3>
+              <ul>
+                {g.items.map((item) => {
+                  // Both storage forms render identically — see lib/features.ts.
+                  const text = featureText(item)
+                  return (
+                    <li key={text}>
+                      <Icon name="check" size={15} />
+                      <span>{text}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -567,7 +715,9 @@ export function FeaturesBlock({ data }: { data: FeaturesSection }) {
 
 function BookingBlock({ widget, accommodationId, ctx }: { widget: string; accommodationId: string; ctx: RenderCtx }) {
   return (
-    <section className="section section-booking" id="boeken">
+    // The id is the shared anchor constant, not a literal: the villa nav bar and the "check
+    // availability" button both link to it, and a rename here would break both silently.
+    <section className="section section-booking" id={VILLA_SECTIONS.booking}>
       <div className="container">
         <TommyWidget
           widget={widget}
@@ -673,6 +823,8 @@ export type SectionOpts = {
   suppressTitle?: boolean
   /** Render this section's own title as <h1> — for pages with no hero to host the heading. */
   headingLevel?: 1 | 2
+  /** Villa hub: show the filter row above the villa grid. */
+  filterable?: boolean
 }
 
 export function SectionView({ section, ctx, opts }: { section: Section; ctx: RenderCtx; opts?: SectionOpts }) {
@@ -684,8 +836,8 @@ export function SectionView({ section, ctx, opts }: { section: Section; ctx: Ren
     case 'cards': return <CardsBlock data={section} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
     case 'reviews': return <ReviewsBlock data={section} locale={ctx.locale} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
     case 'banners': return <BannersBlock data={section} />
-    case 'collection': return <CollectionBlock source={section.source} title={section.title} linkLabel={section.linkLabel} marquee={section.marquee} ctx={ctx} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
-    case 'gallery': return <GalleryBlock data={section} />
+    case 'collection': return <CollectionBlock source={section.source} title={section.title} linkLabel={section.linkLabel} marquee={section.marquee} ctx={ctx} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} filterable={opts?.filterable} />
+    case 'gallery': return <GalleryBlock data={section} locale={ctx.locale} />
     case 'features': return <FeaturesBlock data={section} />
     case 'booking': return <BookingBlock widget={section.widget} accommodationId={section.accommodationId} ctx={ctx} />
     case 'form': return <FormBlock slug={section.slug} intro={section.intro} ctx={ctx} />
@@ -721,6 +873,39 @@ export function Sections({
 /** Villa detail: hero → USP strip → intro + highlights → gallery → indeling → booking → extras. */
 export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: RenderCtx; crumbs?: ReactNode }) {
   const { locale } = ctx
+
+  /**
+   * Page order was changed so a visitor reaches the decision-making information sooner:
+   *
+   *   before: hero → usps → intro+highlights → gallery → layout → booking → extra sections (incl. FAQ)
+   *   after:  hero → usps → KEY FACTS → ANCHOR NAV → intro+highlights → gallery → layout →
+   *           extra sections → FAQ → booking
+   *
+   * Two deliberate moves:
+   *  · The key-facts strip and the anchor bar come before the prose, so "how many bedrooms, is there a
+   *    sauna, are dogs allowed" is answerable without reading anything.
+   *  · Booking moves to LAST and the FAQ before it. Previously the widget sat between the checklist and
+   *    the descriptive sections, so the page continued after the call to action; now the page builds to
+   *    it. The `#boeken` anchor still works from the highlights button and the nav bar.
+   *
+   * The FAQ is separated out of `extraSections` for that reordering. It is identified structurally (a
+   * `columns` section whose only block is `kind: 'faq'`), not by matching its heading text, so it keeps
+   * working in both languages and if the wording changes.
+   */
+  const faqSections = villa.extraSections.filter(
+    (s) => s.type === 'columns' && s.columns.length > 0 && s.columns.every((c) => c.kind === 'faq'),
+  )
+  const otherSections = villa.extraSections.filter((s) => !faqSections.includes(s))
+
+  const facts = villaFacts(villa)
+  const nav = villaNavItems(locale, {
+    gallery: villa.gallery.length > 0,
+    layout: villa.features.length > 0,
+    features: otherSections.length > 0,
+    faq: faqSections.length > 0,
+    booking: !!villa.tommyId,
+  })
+
   return (
     <>
       <HeroBlock
@@ -741,7 +926,10 @@ export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: Re
         </section>
       )}
 
-      <section className="section section-villa-intro">
+      <VillaKeyFacts locale={locale} facts={facts} />
+      <VillaNav locale={locale} items={nav} />
+
+      <section className="section section-villa-intro" id={VILLA_SECTIONS.about}>
         <div className="container villa-intro">
           <div className="villa-intro-text">
             <h1>{villa.title}</h1>
@@ -764,7 +952,7 @@ export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: Re
                   <li key={h}><Icon name="check" size={15} /><span>{h}</span></li>
                 ))}
               </ul>
-              <a className="btn btn-primary" href="#boeken">
+              <a className="btn btn-primary" href={`#${VILLA_SECTIONS.booking}`}>
                 {t(locale, 'checkAvailability')}
                 <Icon name="calendar" size={16} />
               </a>
@@ -773,10 +961,30 @@ export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: Re
         </div>
       </section>
 
-      {villa.gallery.length > 0 && <GalleryBlock data={{ type: 'gallery', images: villa.gallery }} />}
-      {villa.features.length > 0 && <FeaturesBlock data={{ type: 'features', groups: villa.features }} />}
+      {villa.gallery.length > 0 && (
+        <div id={VILLA_SECTIONS.gallery}>
+          {/* Name the gallery after the villa, so a tile reads "Villa Zee — foto 3". */}
+          <GalleryBlock data={{ type: 'gallery', images: villa.gallery }} locale={locale} alt={villa.title} />
+        </div>
+      )}
+      {villa.features.length > 0 && (
+        <div id={VILLA_SECTIONS.layout}>
+          <FeaturesBlock data={{ type: 'features', groups: villa.features }} heading={t(locale, 'navLayout')} />
+        </div>
+      )}
+      {otherSections.length > 0 && (
+        <div id={VILLA_SECTIONS.features}>
+          <Sections sections={otherSections} ctx={ctx} />
+        </div>
+      )}
+      {faqSections.length > 0 && (
+        <div id={VILLA_SECTIONS.faq}>
+          <Sections sections={faqSections} ctx={ctx} />
+        </div>
+      )}
+      {/* Villa -> article links: the one direction the link audit found missing (0/5 in both languages). */}
+      <RelatedArticles locale={locale} items={relatedArticles(locale, villa, ctx.blogs)} blogBase={ctx.blogBase} />
       {villa.tommyId && <BookingBlock widget="boeken" accommodationId={villa.tommyId} ctx={ctx} />}
-      <Sections sections={villa.extraSections} ctx={ctx} />
     </>
   )
 }
@@ -794,7 +1002,7 @@ export function BlogPage({ blog, ctx, crumbs }: { blog: BlogContent; ctx: Render
           {blog.excerpt && <p className="article-lead">{blog.excerpt}</p>}
           {blog.image && (
             <div className="article-figure">
-              <Media src={blog.image} alt={blog.title} shape="wide" label="Foto" />
+              <Media src={blog.image} alt={blog.title} shape="wide" label="Foto" priority sizes="(max-width: 900px) 100vw, 880px" />
             </div>
           )}
           {blog.blocks.map((b, i) => (

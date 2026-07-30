@@ -37,7 +37,7 @@ export function Header({ site, locale = 'nl' }: { site: SiteContent; locale?: st
         <LocaleLink className="brand" href="/" aria-label={site.brandName}>
           {site.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img className="brand-logo" src={site.logo} alt={site.brandName} />
+            <img className="brand-logo" src={site.logo} alt={site.brandName} width={125} height={60} loading="eager" decoding="async" />
           ) : (
             <span className="brand-name">
               <span className="brand-name-main">Ameland</span>

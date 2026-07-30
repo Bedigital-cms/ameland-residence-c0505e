@@ -68,7 +68,7 @@ export function ReviewCard({ review, moreLabel, lessLabel }: { review: Review; m
                 {' op '}
                 {review.sourceLogo ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img className="review-source-logo" src={review.sourceLogo} alt={review.source} />
+                  <img className="review-source-logo" src={review.sourceLogo} alt={review.source} width={72} height={24} loading="lazy" decoding="async" />
                 ) : (
                   <span className="review-source">{review.source}</span>
                 )}

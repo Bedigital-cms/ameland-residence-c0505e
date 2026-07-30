@@ -14,6 +14,7 @@ import { getSite } from '@/content/site'
 import { getVilla, getVillaSlugs } from '@/content/villas'
 import { activeLocales } from '@/lib/i18n'
 import { blogPosting, breadcrumbList, graph, vacationRental } from '@/lib/jsonld'
+import { ogImageForBlog, ogImageForVilla } from '@/lib/og-image'
 import { metadataFrom } from '@/lib/seo'
 import { t } from '@/lib/ui-text'
 
@@ -74,10 +75,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const identity = { locale, equivalents: itemEquivalents(locale, item, source) }
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return metadataFrom(villa.seo, villa.title, identity)
+    if (villa) return metadataFrom(villa.seo, villa.title, identity, ogImageForVilla(villa))
   } else {
     const blog = getBlog(locale, item)
-    if (blog) return metadataFrom(blog.seo, blog.title, identity)
+    if (blog) return metadataFrom(blog.seo, blog.title, identity, ogImageForBlog(blog))
   }
   return {}
 }
@@ -112,7 +113,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
     const blog = getBlog(locale, item)
     if (blog) {
       // No author/date: the content model has none — see `blogPosting`.
-      const jsonld = graph([blogPosting(locale, blog, path, site), breadcrumbList(locale, trail)])
+      const jsonld = graph([blogPosting(locale, blog, path), breadcrumbList(locale, trail)])
       return (
         <Shell locale={locale}>
           <JsonLd json={jsonld} />

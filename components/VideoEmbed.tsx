@@ -9,7 +9,18 @@ import { Icon } from './icons'
  * poster image, so no third-party script or cookie loads on page view. On click the privacy-friendly
  * youtube-nocookie player is inserted and starts.
  */
-export function VideoEmbed({ videoId, poster, title }: { videoId: string; poster?: string; title: string }) {
+export function VideoEmbed({
+  videoId,
+  poster,
+  title,
+  playLabel,
+}: {
+  videoId: string
+  poster?: string
+  title: string
+  /** Localised "Play video: {title}". Falls back to Dutch when a caller has not supplied it. */
+  playLabel?: string
+}) {
   const [playing, setPlaying] = useState(false)
   if (!videoId) return null
 
@@ -26,9 +37,17 @@ export function VideoEmbed({ videoId, poster, title }: { videoId: string; poster
           allowFullScreen
         />
       ) : (
-        <button type="button" className="videoembed-poster" onClick={() => setPlaying(true)} aria-label={`Video afspelen: ${title}`}>
+        <button
+          type="button"
+          className="videoembed-poster"
+          onClick={() => setPlaying(true)}
+          aria-label={(playLabel ?? 'Video afspelen: {title}').replace('{title}', title)}
+        >
+          {/* 16:9 poster. Dimensions reserve the box so the play button does not jump on load.
+              Plain <img> rather than next/image — the poster is a third-party ytimg.com URL, and the
+              reasoning for not using the optimiser here is in Media.tsx. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumb} alt="" loading="lazy" />
+          <img src={thumb} alt="" loading="lazy" decoding="async" width={1280} height={720} sizes="(max-width: 900px) 100vw, 800px" />
           <span className="videoembed-play" aria-hidden="true">
             <Icon name="play" size={30} />
           </span>

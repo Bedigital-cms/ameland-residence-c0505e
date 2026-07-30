@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import type { Seo } from './types'
-import { alternatesFor } from './urls'
+import { absoluteAssetUrl, alternatesFor } from './urls'
 
 /**
  * Turn a page's stored SEO block into Next metadata.
@@ -29,7 +29,19 @@ export type PageIdentity = {
   equivalents: Record<string, string>
 }
 
-export function metadataFrom(seo: Seo | undefined, fallbackTitle: string, page?: PageIdentity): Metadata {
+export function metadataFrom(
+  seo: Seo | undefined,
+  fallbackTitle: string,
+  page?: PageIdentity,
+  /**
+   * The share image, already resolved by the caller (see `lib/og-image.ts`).
+   *
+   * Passed in rather than derived here because only the caller knows what kind of thing it is
+   * rendering — a page has `sections`, a villa has a `hero`, an article has an `image`. When omitted
+   * the behaviour is the previous one: `seo.ogImage` or nothing.
+   */
+  ogImage?: string,
+): Metadata {
   const title = seo?.title || fallbackTitle
   const noindex = /noindex/i.test(seo?.robots || '')
   const alternates = page ? alternatesFor(page.locale, page.equivalents) : undefined
@@ -44,7 +56,9 @@ export function metadataFrom(seo: Seo | undefined, fallbackTitle: string, page?:
     openGraph: {
       title,
       description: seo?.description || undefined,
-      images: seo?.ogImage ? [seo.ogImage] : undefined,
+      // Absolute where an origin is known: og:image is fetched by the sharing platform's own crawler,
+      // which cannot resolve a root-relative path.
+      images: ogImage ? [page ? absoluteAssetUrl(page.locale, ogImage) : ogImage] : undefined,
       type: 'website',
       // Open Graph URL must be the canonical one, else shares and the canonical disagree.
       ...(canonical ? { url: canonical } : {}),

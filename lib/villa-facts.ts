@@ -19,6 +19,7 @@
  * facts that are actually present, which today means sauna / pets / EV charging / location — not
  * guests or bedrooms. See the audit report.
  */
+import { featureLabel, featureTexts } from './features'
 import type { VillaContent } from './types'
 
 export type Amenity = { name: string; value: true }
@@ -62,7 +63,7 @@ function haystack(v: VillaContent): string {
     ...(v.moreParagraphs ?? []),
     ...(v.highlights ?? []),
     ...(v.usps ?? []).map((u) => u.label),
-    ...(v.features ?? []).flatMap((g) => [g.heading, ...g.items]),
+    ...(v.features ?? []).flatMap((g) => [g.heading, ...g.items.map(featureLabel)]),
     v.seo?.title,
     v.seo?.description,
   ]
@@ -71,9 +72,15 @@ function haystack(v: VillaContent): string {
     .replace(/<[^>]+>/g, ' ')
 }
 
-/** Just the checklist lines — the structured part of the content, used for counting rooms. */
+/**
+ * Just the checklist lines — the structured part of the content, used for counting rooms.
+ *
+ * Uses the DISPLAY text, so a structured `{ label: "Doppelzimmer…", qty: 3 }` arrives here as
+ * "Doppelzimmer… (3)" and `roomsOnLine()` reads the 3 exactly as it does for the string form. Taking
+ * the bare label instead would silently drop every restored room count back to 1.
+ */
 function featureLines(v: VillaContent): string[] {
-  return (v.features ?? []).flatMap((g) => g.items).map((s) => s.replace(/<[^>]+>/g, ' ').trim())
+  return featureTexts(v.features).map((s) => s.replace(/<[^>]+>/g, ' ').trim())
 }
 
 /**
@@ -126,6 +133,18 @@ function findGuests(v: VillaContent): number | undefined {
  * beds, and reading it as 2 would overstate the property. A line with no leading quantifier is 1.
  */
 function roomsOnLine(line: string, noun: RegExp): number {
+  /**
+   * A restored quantity row carries its count in a trailing "(N)" — "Doppelzimmer, eines davon mit TV
+   * (3)". That is a genuine room count from the old page (see scripts/restore-villa-checklist.mts), and
+   * it is the ONE case where a number after the noun is still counting rooms rather than fittings, so
+   * it is read before the before-the-noun rules below.
+   */
+  const trailing = line.match(/\((\d+)\)\s*$/)?.[1]
+  if (trailing) {
+    const n = Number(trailing)
+    if (n >= 1 && n <= 20) return n
+  }
+
   let before = line.split(noun)[0] ?? ''
   // Drop a room-SIZE qualifier first: in "Drie 2-persoons slaapkamers" the 2 is beds per room, and
   // the room count is the "Drie" in front of it. Leaving it in would return 2 instead of 3.
@@ -153,7 +172,11 @@ function roomsOnLine(line: string, noun: RegExp): number {
  * substituting the Dutch number would put an unsourced claim on the German page.
  */
 function findBedrooms(lines: string[]): number | undefined {
-  const BEDROOM = /slaapkamers?|Schlafzimmer(?:n)?/i
+  // `Doppelzimmer` ("double room") is how the German pages name a bedroom — the restored checklist rows
+  // read "Doppelzimmer, eines davon mit TV (3)". Without it the German counts stay unreadable even
+  // though the content states them. `Slaapkamer`/`Schlafzimmer` cover the Dutch and the other German
+  // wording; `2-persoonskamer` is the Dutch equivalent of Doppelzimmer.
+  const BEDROOM = /slaapkamers?|Schlafzimmer(?:n)?|Doppelzimmer|persoonskamers?/i
   let total = 0
   let sawAny = false
   for (const line of lines) {

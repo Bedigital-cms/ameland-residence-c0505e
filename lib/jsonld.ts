@@ -181,7 +181,7 @@ export function vacationRental(
  * fields later, add them here; do not backfill from file mtimes or build time, which would be a
  * fabricated claim about when the article was written.
  */
-export function blogPosting(locale: string, blog: BlogContent, path: string, site: SiteContent): JsonLd {
+export function blogPosting(locale: string, blog: BlogContent, path: string): JsonLd {
   const url = absoluteUrl(locale, path)
   return compact({
     '@type': 'BlogPosting',

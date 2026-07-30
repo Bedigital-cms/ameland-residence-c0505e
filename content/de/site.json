@@ -2,7 +2,7 @@
   "site": {
     "brandName": "Ameland Residence",
     "tagline": "Genießen Sie Luxus in der Ameland Residence",
-    "logo": "/media/logo-ameland-residence-donker01.svg",
+    "logo": "/media/ameland-residence-20260730-3c8850-logo-ameland-residence-donker01.svg",
     "nav": [
       {
         "label": "Home",
@@ -56,12 +56,12 @@
       ],
       "email": "info@ameland-residence.nl",
       "phone": "0513-499436",
-      "badge": "/media/ameland-residence-label.png",
+      "badge": "/media/ameland-residence-20260730-7cba82-ameland-residence-label.png",
       "socials": [
         {
           "label": "Facebook",
           "url": "https://www.facebook.com/AmelandResidence/",
-          "icon": "/media/social-icoon-facebook03.svg"
+          "icon": "/media/ameland-residence-20260730-abff58-social-icoon-facebook03.svg"
         }
       ],
       "columns": [

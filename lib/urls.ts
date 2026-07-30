@@ -88,6 +88,24 @@ export function absoluteUrl(locale: string, path: string): string {
   return rel === '/' ? `${origin}/` : `${origin}${rel}`
 }
 
+/**
+ * Fully-qualified URL for a static ASSET (`/media/…`), when the origin is known.
+ *
+ * Distinct from `absoluteUrl`, which routes its argument through `publicPath` and would therefore
+ * prefix a locale onto the path — `/nl/media/foo.jpg`, which does not exist. An asset path is already
+ * final and must be joined to the origin untouched.
+ *
+ * Falls back to the root-relative path when no origin is configured. That is correct for a preview
+ * build, though note a social crawler needs the absolute form: `og:image` is fetched by Facebook's or
+ * LinkedIn's servers, which have no page context to resolve a relative path against. In production
+ * `NEXT_PUBLIC_SITE_URL` (or a per-domain host) supplies the origin and the tag comes out absolute.
+ */
+export function absoluteAssetUrl(locale: string, path: string): string {
+  if (!path.startsWith('/')) return path
+  const origin = siteOrigin(locale)
+  return origin ? `${origin}${path}` : path
+}
+
 /** BCP-47 region-qualified hreflang code ("nl" → "nl-NL"). Falls back to the bare code. */
 const HREFLANG: Record<string, string> = { nl: 'nl-NL', de: 'de-DE' }
 export function hreflangCode(locale: string): string {

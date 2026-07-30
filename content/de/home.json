@@ -17,14 +17,14 @@
       "video": "",
       "mobileVideo": "",
       "images": [
-        "/media/header-home-Ameland-residence-desktop01.jpg",
-        "/media/header-home-Ameland-residence-desktop02.jpg",
-        "/media/header-home-Ameland-residence-desktop03.jpg"
+        "/media/ameland-residence-20260730-b206f2-header-home-ameland-residence-desktop01.jpg",
+        "/media/ameland-residence-20260730-ca4fa3-header-home-ameland-residence-desktop02.jpg",
+        "/media/ameland-residence-20260730-217e4c-header-home-ameland-residence-desktop03.jpg"
       ],
       "mobileImages": [
-        "/media/header-home-Ameland-residence-mobile01.jpg",
-        "/media/header-home-Ameland-residence-mobile02.jpg",
-        "/media/header-home-Ameland-residence-mobile03.jpg"
+        "/media/ameland-residence-20260730-33ae46-header-home-ameland-residence-mobile01.jpg",
+        "/media/ameland-residence-20260730-30841b-header-home-ameland-residence-mobile02.jpg",
+        "/media/ameland-residence-20260730-a88d66-header-home-ameland-residence-mobile03.jpg"
       ]
     },
     {
@@ -63,17 +63,17 @@
           "kind": "list",
           "items": [
             {
-              "icon": "/media/usp-icoon-pure-luxe01.svg",
+              "icon": "/media/ameland-residence-20260730-866369-usp-icoon-pure-luxe01.svg",
               "label": "Luxus pur",
               "text": "Ferienhaus mit allem Komfort"
             },
             {
-              "icon": "/media/usp-icoon-duingebied01.svg",
+              "icon": "/media/ameland-residence-20260730-57f6df-usp-icoon-duingebied01.svg",
               "label": "Genießen Sie das Dünengebiet",
               "text": "In Strandnähe zwischen Nes und Buren"
             },
             {
-              "icon": "/media/usp-icoon-loopafstand-strand01.svg",
+              "icon": "/media/ameland-residence-20260730-f7dbad-usp-icoon-loopafstand-strand01.svg",
               "label": "Nur wenige Gehminuten vom Strand entfernt",
               "text": "Genießen Sie die Meeresbrise und die Brandung."
             }
@@ -100,10 +100,10 @@
         {
           "kind": "gallery",
           "images": [
-            "/media/Sfeer-Afbeelding-02.jpg",
-            "/media/Sfeer-Afbeelding-03.jpg",
-            "/media/Sfeer-Afbeelding-04.jpg",
-            "/media/Sfeer-Afbeelding-05.jpg"
+            "/media/ameland-residence-20260730-bf515d-sfeer-afbeelding-02.jpg",
+            "/media/ameland-residence-20260730-396398-sfeer-afbeelding-03.jpg",
+            "/media/ameland-residence-20260730-792736-sfeer-afbeelding-04.jpg",
+            "/media/ameland-residence-20260730-a0f09d-sfeer-afbeelding-05.jpg"
           ]
         },
         {
@@ -123,27 +123,27 @@
               "kind": "list",
               "items": [
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Sauna",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Badezimmer mit Badewanne",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Großzügiger Garten mit großzügiger Terrasse",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Solarium",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Smart-TV mit umfangreichem Senderpaket inklusive ESPN",
                   "text": ""
                 }
@@ -182,22 +182,22 @@
               "kind": "list",
               "items": [
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Luxusunterkünfte",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Tolle Gastfreundschaft",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Wettbewerbsfähige Preise",
                   "text": ""
                 },
                 {
-                  "icon": "/media/usp-icoon-bruin-met-zwart02.svg",
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
                   "label": "Besondere Orte auf Ameland",
                   "text": ""
                 }
@@ -243,8 +243,8 @@
       "align": "center",
       "ctaLabel": "Schau das Video",
       "ctaUrl": "/video",
-      "video": "/media/01-Ameland-residence-video-desktop.mp4",
-      "mobileVideo": "/media/02-Ameland-residence-video-mobile01.mp4",
+      "video": "/media/ameland-residence-20260730-70de1f-01-ameland-residence-video-desktop.mp4",
+      "mobileVideo": "/media/ameland-residence-20260730-3b11a0-02-ameland-residence-video-mobile01.mp4",
       "images": [],
       "mobileImages": []
     },
@@ -255,21 +255,21 @@
         {
           "title": "Ferienhäuser",
           "text": "",
-          "image": "/media/Banner-Home-01-Villa-03.jpg",
+          "image": "/media/ameland-residence-20260730-82e81c-banner-home-01-villa-03.jpg",
           "url": "/ferienhauser",
           "linkLabel": "mehr lesen"
         },
         {
           "title": "Über Ameland",
           "text": "",
-          "image": "/media/over-ameland01.jpg",
+          "image": "/media/ameland-residence-20260730-a4b3fd-over-ameland01.jpg",
           "url": "/uber-ameland",
           "linkLabel": "mehr lesen"
         },
         {
           "title": "Ferienhäuser mit Sauna",
           "text": "",
-          "image": "/media/villa-met-sauna-ameland.jpg",
+          "image": "/media/ameland-residence-20260730-0c4b9f-villa-met-sauna-ameland.jpg",
           "url": "/ferienhaus-mit-sauna",
           "linkLabel": "mehr lesen"
         }
@@ -285,7 +285,7 @@
       ],
       "ctaLabel": "",
       "ctaUrl": "",
-      "image": "/media/terras.jpg",
+      "image": "/media/ameland-residence-20260730-ebd29e-terras.jpg",
       "reverse": true
     }
   ]

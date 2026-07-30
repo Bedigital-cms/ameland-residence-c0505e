@@ -109,27 +109,107 @@ li { margin-bottom: 0.35em; }
 
 :focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 3px; border-radius: 2px; }
 
+/**
+ * Skip-link: onzichtbaar tot hij focus krijgt, dan bovenaan in beeld.
+ *
+ * Niet `display: none` of `visibility: hidden` — dan is hij ook niet focusbaar en doet hij niets. Wel
+ * uit beeld geschoven met `transform`, zodat hij in de tab-orde blijft staan.
+ */
+.skiplink {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transform: translateY(-150%);
+  transition: transform 0.15s ease-out;
+}
+.skiplink:focus-visible { transform: translateY(0); outline-color: #fff; }
+/* Het <main>-element krijgt tabindex="-1" zodat de sprong focus kan plaatsen; dat mag geen zichtbare
+   ring opleveren als er alleen naartoe gesprongen wordt. */
+main:focus { outline: none; }
+
 .container { width: var(--shell); margin-inline: auto; }
 .container--narrow { width: var(--shell-narrow); }
 
 .section { padding-block: var(--section-y); }
-.section + .section { padding-top: 0; }
-.section-text + .section-text { padding-top: var(--section-y); }
+
+/**
+ * SECTIERITME
+ *
+ * `.section + .section { padding-top: 0 }` liet twee opeenvolgende secties met dezelfde (witte)
+ * achtergrond tegen elkaar aan lopen: op de homepage staan tekst → boeken → kolommen en reviews →
+ * kolommen zo direct op elkaar, waardoor het één lange baan werd zonder zichtbare grens.
+ *
+ * Nu geldt: secties met een EIGEN achtergrond (mint, effect, ink, grijs) brengen hun eigen scheiding
+ * mee — daar hoort de dubbele marge weg. Twee secties op dezelfde witte achtergrond krijgen wél lucht,
+ * anders is er niets dat ze scheidt. Dat is de "visuele scheiding tussen contentsecties" uit de opdracht,
+ * zonder één regel tekst te veranderen.
+ */
+.section + .section { padding-top: var(--section-y); }
+
+/**
+ * Uitzondering: een sectie met een EIGEN achtergrond brengt zijn eigen scheiding mee. Daar zou de
+ * dubbele marge alleen een gat maken tussen twee gekleurde banen. Zowel de gekleurde sectie zelf als
+ * de sectie erná valt terug op de enkele marge.
+ */
+.section + .section-columns--mint,
+.section + .section-columns--effect,
+.section + .section-columns--bleed,
+.section-columns--mint + .section,
+.section-columns--effect + .section,
+.section-columns--bleed + .section { padding-top: 0; }
+
+/**
+ * Opeenvolgende secties zonder eigen achtergrond krijgen een haarlijn als grens.
+ *
+ * De opdracht vraagt om "visuele scheiding tussen contentsecties". Ruimte alleen is op wit te weinig:
+ * op de homepage volgen tekst → boeken → kolommen elkaar op zonder enige markering. Een lijn op de
+ * contentbreedte (niet van rand tot rand) is het rustigste dat werkt en past bij de bestaande
+ * `--line-soft`-lijnen elders in het ontwerp. Alleen tussen witte secties: na een gekleurde baan is de
+ * kleurgrens de scheiding.
+ */
+.section + .section::before {
+  content: '';
+  display: block;
+  width: var(--shell);
+  margin: 0 auto calc(var(--section-y) * 0.75);
+  border-top: 1px solid var(--line-soft);
+}
+/* Geen lijn waar de achtergrond al scheidt, en niet direct na de hero of de USP-balk. */
+.section-columns--mint + .section::before,
+.section-columns--effect + .section::before,
+.section-columns--bleed + .section::before,
+.section-columns--mint::before,
+.section-columns--effect::before,
+.section-columns--bleed::before,
+.section-booking::before,
+.section-reviews::before,
+.section-keyfacts::before { content: none; }
 
 .section-head { margin-bottom: clamp(28px, 3.5vw, 46px); max-width: 60ch; }
 .section-head h2 { margin-bottom: 0.25em; }
 /* Subtitels staan op de bestaande site in het handschriftfont, in sage en licht van gewicht — of het
    nu onder een sectiekop staat ("Check hier direct het actuele aanbod") of in een tekstkolom. Maten
-   en kleur 1:1 uit hun stylesheet: 20px→24px, #94a7a7, weight 300.
-   LET OP: #94a7a7 haalt op wit 2,5:1. Dat is hun eigen keuze en het is grote sierletter, maar het is
-   laag; wil je het leesbaarder, zet dan --sage-deep (5,2:1) in de twee regels hieronder. */
+   1:1 uit hun stylesheet: 20px→24px, weight 300.
+   AFWIJKING: de oude site gebruikt hier #94a7a7, dat op wit 2,5:1 haalt. Bij de toegankelijkheids-
+   controle is dat doorgezet naar --sage-deep (#5c7071, 5,2:1) — zie de opmerking bij de kleur. */
 .section-sub,
 .col-lead {
   font-family: var(--font-hand);
   font-weight: 300;
   font-size: clamp(20px, calc(0.763vw + 16.2px), 24px);
   line-height: 1.3;
-  color: var(--sage);
+  /* Doorgezet naar --sage-deep (5,2:1) zoals de opmerking hierboven al voorstelde. Dit zijn geen
+     sierletters maar echte tekst ("Check hier direct het actuele aanbod"), en op 20–24px in een LICHT
+     gewicht (300) is 2,5:1 te weinig om vlot te lezen. Zelfde kleurfamilie, zelfde font, zelfde maat —
+     alleen donkerder. */
+  color: var(--sage-deep);
   margin: 0;
 }
 
@@ -585,11 +665,56 @@ li { margin-bottom: 0.35em; }
 .split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(30px, 5vw, 84px); align-items: center; }
 .is-reverse .split { direction: rtl; }
 .is-reverse .split > * { direction: ltr; }
-.split-media img { width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+/**
+ * De twee kolommen moeten hun cel niet KUNNEN overschrijden.
+ *
+ * `grid-template-columns: 1fr 1fr` klinkt als "ieder de helft", maar `1fr` is `minmax(auto, 1fr)`: de
+ * automatische MINIMUMbreedte van de inhoud wint van de 1fr. Een breed beeld of een lange, niet-afbreekbare
+ * regel (een Duits samengesteld woord, of de alt-tekst van een gebroken plaatje) duwt zo zijn eigen kolom op
+ * en knijpt de andere plat — precies wat er op /de/uber-uns gebeurde: het beeld pakte bijna de volle breedte
+ * en de tekst werd een smalle strook van één woord per regel.
+ *
+ * `min-width: 0` zet die automatische minimumbreedte uit, zodat 1fr écht de helft is.
+ */
+.split-text,
+.split-media { min-width: 0; }
+/* Lange Duitse woorden mogen afbreken in plaats van de kolom oprekken. */
+.split-text { overflow-wrap: anywhere; }
+/**
+ * Beeld naast tekst. `aspect-ratio` + `object-fit: cover` pinnen de verhouding vast, zodat de hoogte NIET
+ * meer afhangt van de `width`/`height`-attributen op de <img> of van de verhouding van het bronbestand.
+ *
+ * Dit was de oorzaak van het "linker beeld veel te lang"-probleem: zonder hoogteregel leidde de browser de
+ * hoogte af uit de attribuutverhouding, en die stond op portret (3:4). Nu kan geen enkele bronfoto de
+ * sectie nog uitrekken — 4:3 landschap, gecentreerd gecropt.
+ */
+.split-media img,
+.split-media .media-ph {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  /**
+   * Bovengrens op de hoogte.
+   *
+   * `aspect-ratio: 4/3` op een halve contentbreedte is op een breed scherm nog altijd ~530px hoog, en op
+   * de brede banen (`.section-split` staat op de volle 1440px-shell) liep dat op tot ver boven de tekst
+   * ernaast. Het beeld werd dan het zwaartepunt van de sectie in plaats van de begeleiding bij de tekst.
+   *
+   * `max-height` + `object-fit: cover` snijdt het beeld dan bij in plaats van de sectie op te rekken. Zo
+   * blijft de verhouding netjes op smalle schermen (waar 4:3 juist prettig is) en wordt hij op brede
+   * schermen begrensd.
+   */
+  max-height: clamp(300px, 32vw, 440px);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
 
 /* ------------------------------------------------------------------ columns */
 
 .cols { display: grid; gap: clamp(26px, 3.4vw, 54px); align-items: start; }
+/* Zelfde reden als bij `.split`: `1fr` is `minmax(auto, 1fr)`, dus zonder `min-width: 0` kan de
+   inhoud van één kolom de verdeling opduwen en de andere platknijpen. */
+.cols > * { min-width: 0; }
 /* `--cols-template` komt uit de content (`widths` in de sectie) en vult hier alleen de STANDAARD in.
    Zo blijft de verdeling instelbaar per sectie, maar kunnen de responsive regels onderaan de
    kolommen alsnog laten stapelen — een inline `grid-template-columns` zou dat blokkeren. */
@@ -654,7 +779,9 @@ li { margin-bottom: 0.35em; }
   font-weight: 400;
   font-size: 21px;
   line-height: 1.3;
-  color: var(--sage);
+  /* Dit is het LABEL van een USP-regel, dus inhoudelijke tekst — `--sage` haalt op wit maar 2,5:1.
+     Zelfde kleurfamilie, donkerdere variant: 5,2:1. */
+  color: var(--sage-deep);
 }
 .col-list em { display: block; margin-top: -4px; font-style: normal; font-weight: 300; font-size: 0.95rem; }
 
@@ -685,7 +812,7 @@ li { margin-bottom: 0.35em; }
   color: var(--ink);
 }
 .section-columns--effect {
-  background-image: url('/media/bg-effect02.svg');
+  background-image: url('/media/ameland-residence-20260730-d02133-bg-effect02.svg');
   background-repeat: no-repeat;
   background-position: 50% 0%;
 }
@@ -802,13 +929,21 @@ li { margin-bottom: 0.35em; }
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.3s ease-in-out;
 }
-/* Hover = ALLEEN een diepere schaduw. Geen zoom op de foto en geen omhoog-wippende kaart: de
-   bestaande site doet hier niets anders dan `.shadow-hover` (box-shadow 1px 1px 20px rgba(0,0,0,.35)),
-   en een bewegende kaart onder de cursor werkt sowieso slecht in een schuivende band. */
+/* Hover: diepere schaduw (zoals de bestaande site: `.shadow-hover`) PLUS een subtiele zoom op de foto
+   — de opdracht vraagt om "subtle hover zoom". De kaart zelf beweegt niet: een omhoog-wippende kaart
+   werkt slecht in de schuivende band en verstoort de rust van het ontwerp.
+   De zoom zit op de afbeelding binnen `.card-media`, dat `overflow: hidden` heeft, dus het beeld
+   schuift niet buiten de kaart. Respecteert `prefers-reduced-motion` (onderaan dit bestand). */
 a.card:hover { box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.35); }
+.card-media { overflow: hidden; }
+.card-media img { transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1); }
+a.card:hover .card-media img,
+a.card:focus-visible .card-media img { transform: scale(1.045); }
 
 /* The parent defines the frame, so an empty <Media> placeholder fills it exactly. */
-.card-media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--grey); }
+/* `max-height` om dezelfde reden als bij de blog- en gerelateerde kaarten: in één kolom is de kaart de
+   volle breedte, en 4/3 zou daar 494px hoog worden bij een viewport van 700px. */
+.card-media { position: relative; aspect-ratio: 4 / 3; max-height: 340px; overflow: hidden; background: var(--grey); }
 .card-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .card-media .media-ph { position: absolute; inset: 0; height: 100%; aspect-ratio: auto; }
 
@@ -835,7 +970,10 @@ a.card:hover { box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.35); }
 .card--panel .card-body { background: var(--paper); padding: 5px 24px 16px; }
 .card--panel .card-body p {
   margin-bottom: 1em;
-  color: var(--sage);
+  /* Was `--sage` (#94a7a7), wat op wit 2,5:1 haalt — te laag voor tekst die een artikel samenvat en
+     dus gelezen moet worden. `--sage-deep` is dezelfde kleurfamilie op 5,2:1. Het handschriftfont en
+     de grootte blijven gelijk, dus het beeld verandert nauwelijks. */
+  color: var(--sage-deep);
   font-family: var(--font-hand);
   font-size: clamp(18px, 1.5vw, 22px);
   line-height: 1.15;
@@ -877,6 +1015,30 @@ a.card:hover { box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.35); }
   text-align: center;
   text-transform: uppercase;
 }
+/* Feitenrij op een villakaart: compact, één regel per feit, wikkelt op smalle kaarten.
+   Alleen feiten die de villapagina zelf noemt — zie CollectionBlock. */
+.card-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.card-facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+.card-facts svg { flex: none; color: var(--sage-deep); }
+/* In de overlay-variant staat de titel op de foto en is het kaartlichaam gecentreerd; de feitenrij
+   moet dan ook gecentreerd staan, anders hangt hij scheef onder een gecentreerde titel. */
+.card--overlay .card-facts { justify-content: center; }
+
 .card-body h3 { margin-bottom: 0.4em; }
 .card-body p { font-size: 0.92rem; color: var(--ink-soft); margin-bottom: 1.1em; }
 .card-link {
@@ -1002,6 +1164,7 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 /* ----------------------------------------------------------------- features */
 
 .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: clamp(24px, 3vw, 48px); }
+.features-title { margin-bottom: clamp(20px, 2.4vw, 32px); }
 .feature-group {
   padding: 30px 32px;
   background: var(--paper);
@@ -1012,10 +1175,205 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 .feature-group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
 .feature-group li { display: flex; gap: 10px; margin: 0; font-size: 0.93rem; }
 .feature-group svg { flex: none; margin-top: 4px; color: var(--sage); }
+/* De benedenverdieping-lijst loopt tot 18 items. Als één kolom is dat een lange sliert; vanaf twee
+   kolommen scant het als een lijst. `break-inside` houdt een item bij elkaar. */
+@media (min-width: 640px) {
+  .feature-group--long ul { columns: 2; column-gap: 30px; display: block; }
+  .feature-group--long li { margin-bottom: 9px; break-inside: avoid; }
+}
+
+/* --------------------------------------------------- villa-overzicht: filter */
+
+/* Filterrij boven het villaraster. Zelfde chips als het blogoverzicht, dus één visuele taal.
+   Elke chip is een gewone link, dus filteren werkt ook zonder JavaScript. */
+.villafilter { margin-bottom: clamp(22px, 2.6vw, 34px); }
+.villafilter-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; }
+.villafilter-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.villafilter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.villafilter-list li { margin: 0; }
+.villafilter-count {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+.villafilter-reset { color: var(--ink); text-underline-offset: 3px; }
+
+@media (max-width: 560px) {
+  /* Het label kost op een telefoon een hele regel; de chips zeggen het al. */
+  .villafilter-label { display: none; }
+}
+
+/* -------------------------------------------- villa: gerelateerde artikelen */
+
+/* Villa -> artikel: de richting die in de linkanalyse ontbrak (0/5 in beide talen). Relevantie komt
+   uit gedeelde, onderscheidende onderwerpen — zie lib/related.ts. */
+.section-related { background: var(--grey); }
+.related-title { margin-bottom: clamp(20px, 2.4vw, 32px); }
+.relatedgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(18px, 2.2vw, 30px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.relatedgrid li { margin: 0; }
+.relatedcard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease-in-out;
+}
+.relatedcard:hover { box-shadow: var(--shadow-md); }
+.relatedcard-media { display: block; overflow: hidden; }
+/* Zelfde begrenzing als de blogkaarten: in één kolom is de kaart de volle breedte, en dan wordt 3:2 te
+   hoog (bij een viewport van 640px zou het beeld 401px worden). */
+.relatedcard-media img, .relatedcard-media .media-ph {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  max-height: 280px;
+}
+.relatedcard-media img { transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1); }
+.relatedcard:hover .relatedcard-media img { transform: scale(1.045); }
+/* Zelfde gelijk-hoogte-opzet als de blogkaarten. */
+.relatedcard-body { display: flex; flex-direction: column; flex: 1; gap: 7px; padding: 18px 20px 20px; }
+.relatedcard-title {
+  margin: 0;
+  font-size: clamp(16px, 0.8vw + 13px, 18px);
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(2 * 1.32em);
+}
+.relatedcard-title a { color: var(--ink-soft); text-decoration: none; }
+.relatedcard-title a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.relatedcard-excerpt {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-body);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.relatedcard-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: 0.82rem;
+  color: var(--sage-deep);
+}
+
+@media (max-width: 900px) { .relatedgrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .relatedgrid { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------------- villa: kenmerken-strip */
+
+/* Direct onder de USP-balk: het antwoord op "hoeveel personen, sauna, hond?" zonder te lezen.
+   Alleen feiten die de pagina zelf noemt — zie components/VillaKeyFacts.tsx. */
+.section-keyfacts { padding-block: clamp(22px, 2.6vw, 34px); background: var(--grey); }
+.keyfacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: clamp(14px, 2vw, 28px);
+  margin: 0;
+}
+.keyfact { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.keyfact svg { flex: none; color: var(--sage-deep); }
+.keyfact-text { min-width: 0; }
+.keyfact-label {
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.keyfact-value {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  color: var(--ink);
+  /* Lange Duitse woorden ("Ladestation") mogen afbreken in plaats van de kolom oprekken. */
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------- villa: ankernavigatie */
+
+/* Plakt onder de header zodat de secties bereikbaar blijven tijdens het scrollen. Gewone
+   #anker-links, geen JavaScript. */
+.villanav {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.villanav-inner { overflow-x: auto; }
+.villanav-list {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+}
+.villanav-list li { margin: 0; }
+.villanav-link {
+  display: inline-block;
+  padding: 14px 14px 12px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+.villanav-link:hover { color: var(--ink); border-bottom-color: var(--sage); }
+
+/* De ankerdoelen moeten vrij komen van de plakkende header ÉN de plakkende ankerbalk, anders
+   verdwijnt de kop van de sectie eronder na een klik. */
+#over-deze-villa, #fotos, #indeling, #voorzieningen, #faq {
+  scroll-margin-top: calc(var(--header-h) + 56px);
+}
+
+@media (max-width: 700px) {
+  /* Op een telefoon kost een tweede plakkende balk te veel hoogte. */
+  .villanav { position: static; }
+  #over-deze-villa, #fotos, #indeling, #voorzieningen, #faq {
+    scroll-margin-top: calc(var(--header-h) + 12px);
+  }
+  .keyfacts { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+  .keyfact { gap: 9px; }
+}
 
 /* -------------------------------------------------------------- villa page */
 
 .villa-intro { display: grid; grid-template-columns: 1.6fr 1fr; gap: clamp(30px, 4.5vw, 70px); align-items: start; }
+/* Idem: de 1.6fr/1fr-verdeling moet niet te overrulen zijn door de breedte van de inhoud. */
+.villa-intro > * { min-width: 0; }
 .villa-intro-text h1 { margin-bottom: 0.45em; }
 .villa-highlights {
   position: sticky;
@@ -1057,7 +1415,25 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 /* Inleiding van een artikel: geen cursieve serif meer, gewoon Jost in de sage-tint. */
 .article-lead { font-size: clamp(17px, 1.4vw, 19px); color: var(--sage-deep); margin-bottom: 1.6em; }
 .article-figure { margin-bottom: clamp(28px, 4vw, 52px); }
-.article-figure img { width: 100%; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); }
+/**
+ * Het beeld boven een artikel.
+ *
+ * Stond op alleen `width: 100%`, dus de hoogte kwam uit de verhouding van de <img>-attributen (16:9). In de
+ * smalle leeskolom (`--shell-narrow`, 880px) werd dat 495px hoog: het beeld vulde bijna het hele eerste
+ * scherm en de tekst begon pas onder de fold.
+ *
+ * Nu een vaste, begrensde verhouding met `object-fit: cover`, zodat het beeld bijsnijdt in plaats van de
+ * pagina op te rekken. 16:9 blijft de vorm op smalle schermen; op breed is 340px de bovengrens.
+ */
+.article-figure img,
+.article-figure .media-ph {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  max-height: 420px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
 .article h2 { margin-top: 1.7em; }
 
 /* ------------------------------------------------------------------ booking */
@@ -1192,9 +1568,23 @@ a.card:hover .card-link svg { transform: translateX(4px); }
   transition: border-color 0.2s, background-color 0.2s;
 }
 .form textarea { min-height: 140px; resize: vertical; }
+/**
+ * Focus op formuliervelden.
+ *
+ * Stond op `outline: none` met alleen een randkleurwijziging als aanwijzing. Dat is te zwak: een
+ * verandering van randKLEUR alleen is voor iemand die dat kleurverschil niet ziet geen zichtbare focus,
+ * en het is de enige plek in het ontwerp waar de globale focusring werd uitgezet.
+ *
+ * Nu: `:focus` (muis/programmatisch) houdt de rustige randkleur, maar `:focus-visible` — de toetsenbord-
+ * focus — krijgt de gewone focusring van de site erbij. Zo blijft het er bij typen rustig uitzien en is
+ * de focus bij tabben altijd zichtbaar.
+ */
 .form input:focus,
 .form textarea:focus,
-.form select:focus { outline: none; border-color: var(--sage-deep); background: var(--paper); }
+.form select:focus { border-color: var(--sage-deep); background: var(--paper); }
+.form input:focus-visible,
+.form textarea:focus-visible,
+.form select:focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 2px; }
 .form input[type='checkbox'] { width: auto; }
 
 .form button[type='submit'] {
@@ -1242,6 +1632,286 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 /* De groepskoppen werden <h3> gerenderd maar zijn nu <h2> (ze volgen direct op de <h1>, dus <h3>
    sloeg een niveau over). Deze regel houdt de grootte gelijk aan de oude h3. */
 .sitemap-grid h2 { font-size: clamp(19px, calc(0.38vw + 17.1px), 21px); }
+
+/* --------------------------------------------------------------- blogoverzicht */
+
+/* Zoeken, onderwerpfilters, uitgelicht artikel, resultaatteller, wissen en paginering.
+   Alles server-side en via de URL (`?q=&topic=&page=`), dus elke staat is een echte pagina en
+   werkt zonder JavaScript — zie components/BlogIndex.tsx. Deze stijlen houden zich aan het
+   bestaande vocabulaire: rustige kaarten, schaduw bij hover, geen beweging. */
+
+.blogfeatured { margin-bottom: clamp(34px, 4vw, 56px); }
+.blogfeatured-label {
+  margin: 0 0 12px;
+  font-family: var(--font-hand);
+  font-size: clamp(18px, 2vw, 22px);
+  color: var(--sage-deep);
+}
+
+/* --- gereedschapsbalk (zoeken + filters + teller) --- */
+.blogtools { margin-bottom: clamp(26px, 3vw, 40px); }
+
+.blogsearch { margin-bottom: 20px; }
+.blogsearch-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+.blogsearch-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.blogsearch-input {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 12px 16px;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--line-soft);
+  border-radius: var(--radius);
+}
+.blogsearch-input:focus-visible { outline-offset: 1px; border-color: var(--sage-deep); }
+.blogsearch-input::placeholder { color: var(--ink-faint); }
+.blogsearch-submit { flex: none; }
+
+/* --- onderwerpfilters: links, geen buttons, dus elke staat is een URL --- */
+.blogfilter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.blogfilter-list li { margin: 0; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  font-size: 0.86rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+  text-decoration: none;
+  background: var(--paper);
+  border: 2px solid var(--line-soft);
+  border-radius: 999px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.chip:hover { border-color: var(--sage); color: var(--ink); }
+/* Actief = gevuld, niet alleen een randje: kleur alleen is te zwak als onderscheid. */
+.chip.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.chip-count {
+  font-size: 0.76rem;
+  /* Eigen contrast houden op de donkere actieve chip. */
+  color: var(--ink-faint);
+}
+.chip.is-active .chip-count { color: rgba(255, 255, 255, 0.75); }
+
+/* --- resultaatteller + wissen --- */
+.blogmeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+}
+.blogcount { margin: 0; font-size: 0.9rem; color: var(--ink-soft); }
+.blogreset { font-size: 0.86rem; color: var(--ink); text-underline-offset: 3px; }
+
+/* --- raster --- */
+.bloggrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(20px, 2.4vw, 34px);
+}
+.blogempty {
+  padding: clamp(30px, 5vw, 60px) 0;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+/* --- artikelkaart --- */
+.blogcard {
+  display: flex;
+  flex-direction: column;
+  /* Vult de volle hoogte van zijn rastercel, zodat alle kaarten in een rij even hoog zijn. Zonder dit
+     is elke kaart precies zo hoog als zijn eigen inhoud en staat de rij ongelijk — de titels lopen dan
+     over één of twee regels en de samenvatting over twee of drie. */
+  height: 100%;
+  background: var(--paper);
+  border: 2px solid var(--grey);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.3s ease-in-out;
+}
+.blogcard:hover { box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.35); }
+.blogcard-media { display: block; overflow: hidden; }
+.blogcard-media img, .blogcard-media .media-ph {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  /**
+   * Bovengrens op de beeldhoogte.
+   *
+   * 3:2 is prettig in een raster van drie, maar zodra het raster naar één kolom valt is de kaart de volle
+   * contentbreedte: bij een viewport van 700px is dat 658px breed, dus 439px hoog beeld met maar een paar
+   * regels tekst eronder. Het beeld duwt de tekst dan van het scherm af.
+   *
+   * `max-height` + `object-fit: cover` snijdt bij in plaats van op te rekken, dus de kaart blijft
+   * dezelfde vorm houden en het beeld wordt alleen begrensd waar het te hoog zou worden.
+   */
+  max-height: 300px;
+}
+/* Zelfde subtiele zoom als de villakaarten, zodat de hele site één hover-taal spreekt. */
+.blogcard-media img { transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1); }
+.blogcard:hover .blogcard-media img { transform: scale(1.045); }
+/* `flex: 1` laat het kaartlichaam de resthoogte vullen; samen met `height: 100%` op de kaart en
+   `margin-top: auto` op de link staan de "lees meer"-links van alle kaarten in een rij op één lijn. */
+.blogcard-body { display: flex; flex-direction: column; flex: 1; gap: 8px; padding: 20px 22px 22px; }
+.blogcard-title {
+  margin: 0;
+  font-size: clamp(17px, 0.9vw + 14px, 20px);
+  line-height: 1.3;
+  /* Titels lopen van één tot vier regels; afkappen op twee houdt de kaarten in balans zonder een vaste
+     hoogte te forceren. `min-height` reserveert die twee regels ook als de titel er maar één nodig heeft,
+     zodat de samenvatting eronder op dezelfde lijn begint. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(2 * 1.3em);
+}
+.blogcard-title a { color: var(--ink-soft); text-decoration: none; }
+.blogcard-title a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.blogcard-excerpt {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ink-body);
+  /* Kaarten gelijk houden zonder de hoogte vast te zetten: drie regels, dan afkappen. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.blogcard-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  font-size: 0.86rem;
+  color: var(--sage-deep);
+}
+
+/* Uitgelicht: beeld naast tekst op ruime schermen, met een breder beeld. */
+.blogcard--featured { border-color: var(--line-soft); }
+@media (min-width: 860px) {
+  .blogcard--featured { flex-direction: row; align-items: stretch; }
+  .blogcard--featured .blogcard-media { flex: 0 0 55%; }
+  .blogcard--featured .blogcard-media img { height: 100%; aspect-ratio: auto; }
+  .blogcard--featured .blogcard-body { flex: 1; justify-content: center; padding: clamp(24px, 3vw, 44px); }
+  .blogcard--featured .blogcard-title { font-size: clamp(21px, 1.4vw + 16px, 28px); }
+  .blogcard--featured .blogcard-excerpt { -webkit-line-clamp: 4; line-clamp: 4; font-size: 1rem; }
+}
+
+/* --- paginering --- */
+.pager { margin-top: clamp(30px, 3.5vw, 48px); }
+.pager-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pager-list li { margin: 0; }
+.pager-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 12px;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  text-decoration: none;
+  background: var(--paper);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  transition: border-color 0.2s, color 0.2s;
+}
+a.pager-link:hover { border-color: var(--sage-deep); color: var(--ink); }
+.pager-link.is-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Vorige/volgende: tekst in plaats van een paginanummer, zodat ze niet als dubbele nummerknop lezen. */
+.pager-step { padding: 0 16px; }
+/* De iconenset heeft alleen een pijl naar rechts; voor "vorige" wordt hij gespiegeld. */
+.pager-arrow { flex: none; }
+.pager-arrow--prev { transform: scaleX(-1); }
+/* Aan de randen blijven de knoppen staan (uitgeschakeld), zodat de strook niet verspringt. */
+.pager-link.is-disabled {
+  color: var(--ink-faint);
+  border-color: var(--line-soft);
+  background: var(--grey);
+  cursor: default;
+}
+/* De ellips tussen ver uiteenliggende paginanummers. */
+.pager-gap {
+  display: inline-flex;
+  align-items: flex-end;
+  height: 42px;
+  padding: 0 2px;
+  color: var(--ink-faint);
+  user-select: none;
+}
+
+@media (max-width: 560px) {
+  /* Op een telefoon is er geen ruimte voor het woord; dan alleen de pijl. */
+  .pager-step > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .pager-step { padding: 0 12px; }
+}
+
+/* --- volledige linklijst: staat altijd in de HTML, ook als paginering een deel toont --- */
+.bloglist { margin-top: clamp(30px, 3.5vw, 48px); border-top: 1px solid var(--line-soft); padding-top: 18px; }
+.bloglist-summary { font-size: 0.9rem; color: var(--ink-soft); cursor: pointer; }
+.bloglist-links {
+  columns: 2;
+  column-gap: 40px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.bloglist-links li { margin-bottom: 7px; break-inside: avoid; }
+.bloglist-links a { font-size: 0.9rem; color: var(--ink); text-decoration: none; }
+.bloglist-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 900px) {
+  .bloggrid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .bloggrid { grid-template-columns: 1fr; }
+  .bloglist-links { columns: 1; }
+  .blogmeta { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
 .sitemap-grid ul { list-style: none; margin: 0; padding: 0; }
 .sitemap-grid li { margin-bottom: 7px; }
 .sitemap-grid a { font-size: 0.92rem; color: var(--ink); text-decoration: none; }
@@ -1261,11 +1931,18 @@ a.card:hover .card-link svg { transform: translateX(4px); }
   color: var(--ink-faint);
 }
 .media-ph-label { font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; }
-.media-ph--card { aspect-ratio: 4 / 3; }
+/* De placeholder moet exact de ruimte innemen die de echte foto straks krijgt — anders verspringt de
+   layout zodra het beeld geladen is. Deze verhoudingen horen dus gelijk te zijn aan die in
+   `SHAPE_SIZE` (components/Media.tsx) én aan wat de CSS bij dat blok pint. */
+/* `.card-media` pint zelf 4/3 en overschrijft dit (regel `.card-media .media-ph`); `.blogcard-media`
+   en `.relatedcard-media` pinnen 3/2. Deze standaard geldt voor losse `shape="card"`-gebruikers. */
+.media-ph--card { aspect-ratio: 3 / 2; }
 .media-ph--wide { aspect-ratio: 16 / 9; }
-.media-ph--portrait { aspect-ratio: 3 / 4; }
+/* `portrait` is ondanks de naam een LANDSCHAPverhouding: `.split-media` staat op 4/3. Stond op 3/4,
+   waardoor de placeholder anderhalf keer zo hoog werd als de foto die erin komt. */
+.media-ph--portrait { aspect-ratio: 4 / 3; }
 .media-ph--square { aspect-ratio: 1 / 1; }
-.media-ph--free { aspect-ratio: 4 / 3; }
+.media-ph--free { aspect-ratio: 3 / 2; }
 
 /* ------------------------------------------------------------------- footer */
 
@@ -1281,7 +1958,7 @@ a.card:hover .card-link svg { transform: translateX(4px); }
   padding-block: 32px;
   background-color: var(--stone);
   /* Het patroon komt uit de mediabibliotheek; ontbreekt het (nog), dan blijft de vlakke kleur staan. */
-  background-image: url('/media/bg-patroon-donker-transparant01.svg');
+  background-image: url('/media/ameland-residence-20260730-8c0489-bg-patroon-donker-transparant01.svg');
   background-repeat: repeat;
 }
 /* Kolomkop in de footer, 1:1 hun `.footer--column--title`: Jost 500, 20→23px, bruin en NIET
@@ -1465,4 +2142,10 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   .hero-slide { transition: none; }
+  /* De regel hierboven maakt de overgang onmerkbaar, maar de EINDSTAND blijft dan een ingezoomd beeld.
+     Bij reduced-motion horen de hover-zooms helemaal niet te gebeuren. */
+  a.card:hover .card-media img,
+  a.card:focus-visible .card-media img,
+  .blogcard:hover .blogcard-media img,
+  .relatedcard:hover .relatedcard-media img { transform: none !important; }
 }

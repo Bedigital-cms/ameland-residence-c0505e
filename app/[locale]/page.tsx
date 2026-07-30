@@ -8,17 +8,21 @@ import { homeEquivalents } from '@/content/equivalents'
 import { getHome } from '@/content/home'
 import { getSite } from '@/content/site'
 import { graph, organization, website } from '@/lib/jsonld'
+import { ogImageForPage } from '@/lib/og-image'
 import { pageHeading } from '@/lib/page-heading'
 import { metadataFrom } from '@/lib/seo'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params
   const site = getSite(locale)
+  const home = getHome(locale)
   // The homepage exists in every language, so it always gets a canonical + reciprocal hreflang.
-  return metadataFrom(getHome(locale).seo, `${site.brandName} — ${site.tagline}`, {
-    locale,
-    equivalents: homeEquivalents(),
-  })
+  return metadataFrom(
+    home.seo,
+    `${site.brandName} — ${site.tagline}`,
+    { locale, equivalents: homeEquivalents() },
+    ogImageForPage(home.seo?.ogImage, home.sections),
+  )
 }
 
 /** Homepage. Like every other page it is just a list of sections from content/<locale>/home.json. */

@@ -194,8 +194,23 @@ export type CollectionSection = {
 /** Photo grid / lightbox strip. */
 export type GallerySection = { type: 'gallery'; images: string[] }
 
+/**
+ * One line in a villa checklist.
+ *
+ * Historically a plain string, with any quantity written into the text — `"Campingbedjes (2)"`. The
+ * structured form separates the two, so a count is a number the site can read rather than punctuation
+ * it has to parse back out.
+ *
+ * BOTH FORMS STAY VALID, deliberately. There are ~250 checklist lines across two languages; requiring
+ * them all to convert at once would mean one migration that either lands completely or breaks the
+ * build. With the union, a group can be converted whenever its content is touched and the rest keeps
+ * working. Read them through `featureLabel()` / `featureText()` in `lib/features.ts` — never inline,
+ * or the object form renders as "[object Object]".
+ */
+export type FeatureItem = string | { label: string; qty?: number }
+
 /** Checklist groups ("Indeling benedenverdieping", …) on a villa page. */
-export type FeaturesSection = { type: 'features'; groups: { heading: string; items: string[] }[] }
+export type FeaturesSection = { type: 'features'; groups: { heading: string; items: FeatureItem[] }[] }
 
 /**
  * The Tommy Booking Support widget.
@@ -293,6 +308,20 @@ export type PageCollection = Record<string, PageContent>
 export type VillaContent = {
   title: string
   subtitle: string
+  /**
+   * Sleeping capacity, as a number. Optional: when absent the site falls back to reading it out of the
+   * villa's own prose (`lib/villa-facts.ts`), which only succeeds where a page happens to state it.
+   * Filling this in is what makes the guests filter on the overview possible — see `lib/villa-filter.ts`.
+   *
+   * THE SAME VILLA MUST CARRY THE SAME NUMBER IN content/nl AND content/de. The two files are separate,
+   * but a house does not sleep eight in Dutch and six in German. `pnpm test:villa-facts` fails on a
+   * mismatch rather than letting the two languages drift.
+   */
+  guests?: number
+  /** Bedroom count. Same rules as `guests`. */
+  bedrooms?: number
+  /** Bathroom count. Same rules as `guests`. */
+  bathrooms?: number
   /** Tommy accommodation id — drives the booking calendar on this villa's page. */
   tommyId: string
   cardImage: string
@@ -305,7 +334,7 @@ export type VillaContent = {
   moreParagraphs: Html[]
   highlights: string[]
   gallery: string[]
-  features: { heading: string; items: string[] }[]
+  features: { heading: string; items: FeatureItem[] }[]
   /** Free-form sections appended below the fixed villa layout. */
   extraSections: Section[]
   seo: Seo

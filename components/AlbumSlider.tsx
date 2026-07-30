@@ -47,6 +47,12 @@ export function AlbumSlider({ images, alt, locale = 'nl' }: { images: string[]; 
           alt={i === 0 ? alt : ''}
           className={`album-slide${i === active ? ' is-active' : ''}`}
           loading={i === 0 ? 'eager' : 'lazy'}
+          decoding="async"
+          // Intrinsic 4:3 ratio so the slot is reserved before the bytes land; the slides are
+          // absolutely stacked and cropped with object-fit, so this is the ratio, not the file size.
+          width={1200}
+          height={900}
+          sizes="(max-width: 900px) 100vw, 50vw"
         />
       ))}
       {slides.length > 1 && (

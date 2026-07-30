@@ -1,21 +1,27 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense, type ReactNode } from 'react'
 
+import { BlogFilterState } from '@/components/BlogFilterState'
+import { BlogIndex } from '@/components/BlogIndex'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { JsonLd } from '@/components/JsonLd'
 import { Sections, type RenderCtx, type SectionOpts } from '@/components/sections'
 import { Shell } from '@/components/Shell'
 import { pageTrail } from '@/content/breadcrumbs'
 import { buildCtx } from '@/content/ctx'
+import { applyBlogQuery, featuredBlog, parseBlogQuery } from '@/lib/blog-query'
 import { pageEquivalents } from '@/content/equivalents'
 import { getPage, getPageSlugs } from '@/content/pages'
 import { getSite } from '@/content/site'
 import { activeLocales } from '@/lib/i18n'
 import { breadcrumbList, graph } from '@/lib/jsonld'
+import { ogImageForPage } from '@/lib/og-image'
 import { pageHeading } from '@/lib/page-heading'
 import { metadataFrom } from '@/lib/seo'
 import { t } from '@/lib/ui-text'
-import type { PageContent, Section, TextSection } from '@/lib/types'
+import { publicPath } from '@/lib/urls'
+import type { CollectionSection, PageContent, Section, TextSection } from '@/lib/types'
 
 /**
  * Every PAGE on this site except the homepage: the hubs (`/villa-s`, `/blogs`), the functional
@@ -50,7 +56,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale, slug } = await params
   const page = getPage(locale, slug)
   if (!page) return {}
-  return metadataFrom(page.seo, page.title, { locale, equivalents: pageEquivalents(locale, slug) })
+  return metadataFrom(
+    page.seo,
+    page.title,
+    { locale, equivalents: pageEquivalents(locale, slug) },
+    // `page.sections`, not the `kind`-expanded list: the sections added there (the booking widget, the
+    // generated sitemap, the contact form) carry no photograph, so searching them would find nothing
+    // while making the share image depend on rendering logic rather than on editable content.
+    ogImageForPage(page.seo?.ogImage, page.sections),
+  )
 }
 
 /**
@@ -67,8 +81,13 @@ function pageSections(page: PageContent): Section[] {
       if (!has('collection')) sections.push({ type: 'collection', source: 'villas', title: page.title, linkLabel: '' })
       break
     case 'blogs-hub':
-      if (!has('collection')) sections.push({ type: 'collection', source: 'blogs', title: page.title, linkLabel: '' })
-      break
+      /**
+       * The blog hub does NOT get a `collection` section: it is rendered by <BlogIndex> instead, which
+       * adds the search, topic filters, featured article, result count, reset and paging the brief asks
+       * for. Any `collection` section the content already has is dropped for the same reason — it would
+       * print a second, unfiltered copy of the same 57 cards below the real index.
+       */
+      return sections.filter((s) => !(s.type === 'collection' && s.source === 'blogs'))
     case 'booking':
     case 'lastminutes':
       if (!has('booking')) sections.push({ type: 'booking', widget: 'zoeken', accommodationId: '' })
@@ -99,6 +118,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const ctx: RenderCtx = buildCtx(locale)
   const site = getSite(locale)
   const sections = pageSections(page)
+  const isBlogHub = page.kind === 'blogs-hub'
 
   /**
    * Give the page exactly one <h1>.
@@ -113,12 +133,31 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
    * the form: it is no longer a top-level section, so its title can't be promoted from there and the
    * page falls through to its own title instead.
    */
-  const heading = pageHeading(sections, page.title)
+  // The blog hub's heading used to come from its `collection` section title ("Blogs"), which
+  // `pageSections` now removes in favour of <BlogIndex>. Pass that title through as the fallback so the
+  // hub keeps the exact same <h1> text it had before — no new copy, no lost heading.
+  const removedBlogCollection = isBlogHub
+    ? page.sections.find((s): s is CollectionSection => s.type === 'collection' && s.source === 'blogs')
+    : undefined
+  const headingFallback = removedBlogCollection?.title || page.title
+
+  const heading = pageHeading(sections, headingFallback)
   const crumbLabel = t(locale, 'breadcrumb')
   // The trail names this page by its H1, not by its SEO title (which carries a "| brand" suffix).
   const trail = pageTrail(locale, slug, site.brandName, heading.text)
 
   const opts: Record<number, SectionOpts> = {}
+
+  /**
+   * Villa hub: switch on the filter row above the villa grid. Marked per SECTION index, so a `collection`
+   * section elsewhere on the site (the homepage strip, the article footer) stays an unfiltered grid.
+   */
+  if (page.kind === 'villas-hub') {
+    sections.forEach((sec, i) => {
+      if (sec.type === 'collection' && sec.source === 'villas') opts[i] = { ...opts[i], filterable: true }
+    })
+  }
+
   const hasHeroH1 = heading.heroIndex >= 0 && !!heading.text
   if (hasHeroH1) {
     // Promote into the hero: inject the text as the hero title, mark it as the h1, add the crumbs.
@@ -154,6 +193,53 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 
   const jsonld = graph([breadcrumbList(locale, trail)])
 
+  /**
+   * Blog hub: the searchable, filterable index replaces the plain card grid.
+   *
+   * Filtering happens here, on the server, from the query string — so every filter state is a real URL,
+   * the articles are in the HTML for crawlers, and the whole thing works with JavaScript off. See
+   * `lib/blog-query.ts` and `components/BlogIndex.tsx`.
+   */
+  let blogIndex: ReactNode = null
+  if (isBlogHub) {
+    const base = ctx.blogBase || `/${slug}`
+    // `publicPath` applies the same locale/prefix rules the router uses, so the search form posts back
+    // to the hub in the CURRENT language and mode.
+    const formAction = publicPath(locale, base)
+    const query = parseBlogQuery(locale, undefined)
+    const { searchMatched, filtered } = applyBlogQuery(locale, ctx.blogs, query)
+
+    /**
+     * The FALLBACK is the complete, unfiltered index, rendered on the server.
+     *
+     * That is deliberate, not a placeholder: it is what ends up in the static HTML, so a crawler and a
+     * visitor without JavaScript get every article card, the featured article and the full crawlable
+     * link list. `BlogFilterState` then re-renders the same index with `?q=&topic=&page=` applied once
+     * JS runs.
+     *
+     * Reading the query string in a client component (rather than via the route's `searchParams`) is
+     * what keeps this page STATIC — see the note in BlogFilterState.tsx.
+     */
+    blogIndex = (
+      <Suspense
+        fallback={
+          <BlogIndex
+            locale={locale}
+            blogs={ctx.blogs}
+            base={base}
+            formAction={formAction}
+            query={query}
+            searchMatched={searchMatched}
+            filtered={filtered}
+            featured={featuredBlog(ctx.blogs)}
+          />
+        }
+      >
+        <BlogFilterState locale={locale} blogs={ctx.blogs} base={base} formAction={formAction} />
+      </Suspense>
+    )
+  }
+
   return (
     <Shell locale={locale}>
       <JsonLd json={jsonld} />
@@ -164,6 +250,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         </div>
       )}
       <Sections sections={sections} ctx={ctx} opts={opts} />
+      {blogIndex}
     </Shell>
   )
 }

@@ -53,6 +53,13 @@ export function HeroSlider({
           loading={i === 0 ? 'eager' : 'lazy'}
           // The first slide is the LCP element on most pages.
           fetchPriority={i === 0 ? 'high' : 'auto'}
+          decoding={i === 0 ? 'sync' : 'async'}
+          // Intrinsic ratio so the slot is reserved before the bytes land. The hero is absolutely
+          // positioned and cropped with object-fit, so these are the ratio, not a claim about the file.
+          width={2600}
+          height={1463}
+          // The hero always spans the viewport, so never download a scaled-down variant for it.
+          sizes="100vw"
         />
       ))}
       {slides.length > 1 && (
