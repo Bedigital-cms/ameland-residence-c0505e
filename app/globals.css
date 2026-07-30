@@ -2124,7 +2124,7 @@ a.pager-link:hover { border-color: var(--sage-deep); color: var(--ink); }
 .footer-cols > .footer-badge { align-self: flex-end; max-width: 250px; }
 /* Hun `.footer--banners img { max-width: 100%; width: auto }` — de kolom (max 250px) bepaalt de
    maat. De placeholder heeft geen intrinsieke maat, dus die vult de kolom wél. */
-.footer-badge img { width: auto; max-width: 100%;object-fit;:contain }
+.footer-badge img { width: auto; max-width: 100%;object-fit:contain }
 .footer-badge .media-ph { width: 100%; }
 /* Hun `.footer--banners > * { margin-block: .5em }`. */
 .footer-badge > div > * { display: block; margin-block: 0.5em; }
