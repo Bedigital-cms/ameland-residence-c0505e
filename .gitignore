@@ -1,0 +1,16 @@
+/node_modules
+/.next
+/.next-verify
+/out
+/build
+*.zip
+*.tsbuildinfo
+next-env.d.ts
+.env*
+!.env.example
+!.env
+
+# Migrated media (≈150 MB). These are a one-time DELIVERY artifact: copy the folder to
+# <cms>/media/_import/ameland-residence/ and run CMS → Media → "Importeren". They must not travel
+# with every tenant copy of this repo. See MEDIA.md.
+/_import

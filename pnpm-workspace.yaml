@@ -1,0 +1,9 @@
+# pnpm 11 reads build-script permissions from here (no longer from package.json or .npmrc).
+# sharp (Next's image pipeline) and unrs-resolver (the eslint import resolver) ship postinstall
+# scripts. Without an explicit decision `pnpm install` exits non-zero with ERR_PNPM_IGNORED_BUILDS,
+# which would fail the platform's validation install.
+allowBuilds:
+  # esbuild is tsx's compiler; tsx runs the media scripts in `scripts/`.
+  esbuild: true
+  sharp: true
+  unrs-resolver: true

@@ -1,0 +1,20 @@
+{
+  "$comment": "Nederlandse weergavetekst voor de formulieren. Zelfde structuur als content/forms.json — alleen label/placeholder/submitLabel/successMessage zijn vertaalbaar. Beheerd via de CMS Formulieren-editor.",
+  "forms": {
+    "contact": {
+      "name": "Contact",
+      "submitLabel": "Verzenden",
+      "successMessage": "Bedankt voor uw bericht. We nemen zo snel mogelijk contact met u op.",
+      "isActive": true,
+      "fields": [
+        { "name": "full_name", "label": "Naam", "fieldType": "text", "required": true, "placeholder": "Uw naam" },
+        { "name": "address", "label": "Adres", "fieldType": "text", "required": false, "placeholder": "Straat en huisnummer" },
+        { "name": "postal_code", "label": "Postcode", "fieldType": "text", "required": false, "placeholder": "1234 AB" },
+        { "name": "city", "label": "Plaats", "fieldType": "text", "required": false, "placeholder": "Uw woonplaats" },
+        { "name": "telephone", "label": "Telefoonnummer", "fieldType": "tel", "required": false, "placeholder": "+31 6 12 34 56 78" },
+        { "name": "email", "label": "E-mailadres", "fieldType": "email", "required": true, "placeholder": "u@voorbeeld.nl" },
+        { "name": "query", "label": "Vraag en/of opmerking", "fieldType": "textarea", "required": true, "placeholder": "Waarmee kunnen wij u helpen?" }
+      ]
+    }
+  }
+}

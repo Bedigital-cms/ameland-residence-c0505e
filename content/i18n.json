@@ -1,0 +1,12 @@
+{
+  "$comment": "Taal-configuratie (geschreven door de CMS tenant-toggles). Ameland Residence draait per-domein: ameland-residence.nl toont Nederlands, ameland-residence.de toont Duits — één repo, één Vercel-project, twee domeinen, geen /taal in de URL en geen taalwisselaar in de header (de bezoeker wisselt via het andere domein). hideDefaultPrefix staat aan zodat oude URL's in één redirect-hop op de schone URL uitkomen.",
+  "enabled": true,
+  "defaultLocale": "nl",
+  "locales": ["nl", "de"],
+  "hideDefaultPrefix": true,
+  "domainLocalesEnabled": true,
+  "domainLocales": {
+    "ameland-residence.nl": "nl",
+    "ameland-residence.de": "de"
+  }
+}

@@ -1,0 +1,337 @@
+{
+  "seo": {
+    "title": "Luxe vakantiehuis op Ameland huren | Ameland Residence",
+    "description": "Vakantiehuis op Ameland huren? Elke villa beschikt over luxe faciliteiten ✔️ Sauna ✔️ Solarium ✔️ Luxe badkamer met ligbad",
+    "keywords": "vakantiehuis ameland, luxe vakantie ameland, luxe vakantievilla, luxe verblijf op ameland",
+    "ogImage": "",
+    "robots": "index, follow"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "title": "Geniet van luxe en weelde op Ameland",
+      "subtitle": "in een vakantiehuis van Ameland Residence",
+      "align": "center",
+      "ctaLabel": "",
+      "ctaUrl": "",
+      "video": "",
+      "mobileVideo": "",
+      "images": [
+        "/media/ameland-residence-20260730-b206f2-header-home-ameland-residence-desktop01.jpg",
+        "/media/ameland-residence-20260730-ca4fa3-header-home-ameland-residence-desktop02.jpg",
+        "/media/ameland-residence-20260730-217e4c-header-home-ameland-residence-desktop03.jpg"
+      ],
+      "mobileImages": [
+        "/media/ameland-residence-20260730-33ae46-header-home-ameland-residence-mobile01.jpg",
+        "/media/ameland-residence-20260730-30841b-header-home-ameland-residence-mobile02.jpg",
+        "/media/ameland-residence-20260730-a88d66-header-home-ameland-residence-mobile03.jpg"
+      ]
+    },
+    {
+      "type": "text",
+      "title": "Zoek & boek een luxe villa op Ameland",
+      "subtitle": "Check hier direct het actuele aanbod",
+      "paragraphs": [],
+      "ctaLabel": "",
+      "ctaUrl": ""
+    },
+    {
+      "type": "booking",
+      "widget": "zoeken",
+      "accommodationId": ""
+    },
+    {
+      "type": "columns",
+      "background": "effect",
+      "space": {
+        "top": 64,
+        "bottom": 80,
+        "gap": 30
+      },
+      "columns": [
+        {
+          "kind": "text",
+          "title": "Een luxe vakantiehuis op Ameland van Ameland Residence",
+          "lead": "Ameland Residence is de absolute koploper in luxe vakantiehuizen op Ameland.",
+          "paragraphs": [
+            "Wij bieden vijf vakantiewoningen te huur aan in het duingebied en nabij het strand tussen Nes en Buren. Iedere vakantiewoning is voorzien van alle comfort en luxe die u mag verwachten zoals een Smart TV met uitgebreid zenderpakket inclusief ESPN, solarium, ligbad en een royaal terras. Daarnaast wordt er een luxe bungalow aangeboden op de Roosdunen bij Ballum. Volop keuze uit onze <a href=\"/villa-s\">luxe villa’s op Ameland</a>!"
+          ],
+          "ctaLabel": "",
+          "ctaUrl": ""
+        },
+        {
+          "kind": "list",
+          "items": [
+            {
+              "icon": "/media/ameland-residence-20260730-866369-usp-icoon-pure-luxe01.svg",
+              "label": "Pure luxe",
+              "text": "Vakantiewoning voorzien van alle comfort"
+            },
+            {
+              "icon": "/media/ameland-residence-20260730-57f6df-usp-icoon-duingebied01.svg",
+              "label": "Genieten in het duingebeid",
+              "text": "Nabij het strand tussen Nes en Buren"
+            },
+            {
+              "icon": "/media/ameland-residence-20260730-f7dbad-usp-icoon-loopafstand-strand01.svg",
+              "label": "Op loopafstand van het strand",
+              "text": "Genieten van zeebries en branding."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "collection",
+      "source": "villas",
+      "title": "",
+      "linkLabel": "meer informatie",
+      "marquee": true
+    },
+    {
+      "type": "columns",
+      "bleed": true,
+      "space": {
+        "top": 80,
+        "bottom": 112,
+        "gap": 30
+      },
+      "columns": [
+        {
+          "kind": "gallery",
+          "images": [
+            "/media/ameland-residence-20260730-bf515d-sfeer-afbeelding-02.jpg",
+            "/media/ameland-residence-20260730-396398-sfeer-afbeelding-03.jpg",
+            "/media/ameland-residence-20260730-792736-sfeer-afbeelding-04.jpg",
+            "/media/ameland-residence-20260730-a0f09d-sfeer-afbeelding-05.jpg"
+          ]
+        },
+        {
+          "kind": "group",
+          "blocks": [
+            {
+              "kind": "text",
+              "title": "Vakantiehuis op Ameland",
+              "lead": "Genieten van rust, buitenlucht en samen zijn.",
+              "paragraphs": [
+                "Er even heerlijk tussenuit! Samen met familie of vrienden genieten van rust, buitenlucht en samen zijn. Dit kunt u doen tijdens een vakantie op Ameland. Op één van de mooiste plekjes van Ameland in de duinen ten noorden van Nes en Buren staan onze <a href=\"/villa-s\">luxe vakantiehuizen</a> en duinvilla's. Daarnaast hebben we nog een prachtige <a href=\"/villa-s/luxe-bungalow-watersnip#verblijf\">bungalow</a> op de Roosdunen bij Ballum. Onze mooie rietgedekte villa’s staan garant voor een ontspannen verblijf en zorgen voor veel privacy. Het strand, de dorpjes en de bossen zijn makkelijk bereikbaar. U bevindt zich middenin een prachtig gebied om te wandelen, fietsen, of op het strand te relaxen. Een vakantie op Ameland betekent ontspanning, genieten en plezier. Onze vakantiewoningen zijn allemaal voorzien van een aantal luxe faciliteiten, zoals bijvoorbeeld:"
+              ],
+              "ctaLabel": "",
+              "ctaUrl": ""
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Sauna",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Badkamer met ligbad",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Ruime tuin met royaal terras",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Solarium",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Smart TV met uitgebreid zenderpakket inclusief ESPN",
+                  "text": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "reviews",
+      "title": "Ontdek hoe gasten hun verblijf hebben ervaren!",
+      "subtitle": "Wat zeggen bezoekers over hun verblijf?",
+      "ctaLabel": "Laat een review achter",
+      "ctaUrl": "https://www.google.com/search?sca_esv=de893e36d6b67b5c&rlz=1C5CHFA_enNL1050NL1051&sxsrf=ANbL-n7nEFtqRbq1og_sbutRVR3ZTZEDFA:1773144146043&kgmid=/g/1tl9lv3b&q=Ameland+Residence+%7C+Luxe+vakantiehuizen+op+Ameland&shem=epsd1,shrtsdl&shndl=30&source=sh/x/loc/uni/m1/1&kgs=e8489498f9f2d0d9&utm_source=epsd1,shrtsdl,sh/x/loc/uni/m1/1",
+      "items": [
+        {
+          "author": "Michel de Meijer",
+          "date": "1 maand geleden",
+          "source": "Google",
+          "sourceLogo": "",
+          "rating": 5,
+          "text": "Heerlijke woning, ruim en voorzien van veel comfort. Op korte afstand van het strand maar ook van de dorpen.",
+          "verified": true
+        },
+        {
+          "author": "Rian Havekes",
+          "date": "2 maanden geleden",
+          "source": "Google",
+          "sourceLogo": "",
+          "rating": 5,
+          "text": "Wat een heerlijke tijd hebben wij gehad in Villa Zilt met ons gezin. Mooie plek, centrale ligging, schoon en compleet.",
+          "verified": true
+        },
+        {
+          "author": "Karlijn Punt",
+          "date": "3 jaar geleden",
+          "source": "Google",
+          "sourceLogo": "",
+          "rating": 5,
+          "text": "Genoten van een heerlijke vakantie op Ameland! Fijn verblijf gehad waar we met ons gezin van 5 goed zijn ontvangen.",
+          "verified": true
+        },
+        {
+          "author": "Anke",
+          "date": "3 jaar geleden",
+          "source": "Google",
+          "sourceLogo": "",
+          "rating": 5,
+          "text": "In één woord: geweldig! We zijn nu een paar keer naar Ameland geweest en we hebben gekozen voor villa Zee.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "type": "columns",
+      "background": "mint",
+      "widths": [
+        324,
+        400,
+        572
+      ],
+      "space": {
+        "top": 64,
+        "bottom": 64,
+        "gap": 16
+      },
+      "columns": [
+        {
+          "kind": "group",
+          "blocks": [
+            {
+              "kind": "text",
+              "title": "Ameland Residence",
+              "lead": "",
+              "paragraphs": [],
+              "ctaLabel": "",
+              "ctaUrl": ""
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Luxe accommodatie's",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Grote gastvrijheid",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Scherpe tarieven",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Bijzondere plekjes op Ameland",
+                  "text": ""
+                }
+              ]
+            },
+            {
+              "kind": "text",
+              "title": "",
+              "lead": "",
+              "paragraphs": [],
+              "ctaLabel": "Neem contact op",
+              "ctaUrl": "/contact"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "title": "Last minutes",
+          "lead": "",
+          "paragraphs": [
+            "Wilt u er op korte termijn nog even tussenuit? Even écht ontspannen in een prachtige omgeving? Speciaal voor u hebben wij onze beste last minutes deals geselecteerd. Bekijk onze scherp geprijsde aanbiedingen en boek uw vakantie naar Ameland!"
+          ],
+          "ctaLabel": "Bekijk onze last minutes",
+          "ctaUrl": "/last-minutes"
+        },
+        {
+          "kind": "text",
+          "title": "Veel mogelijkheden in onze vakantiehuizen",
+          "lead": "",
+          "paragraphs": [
+            "Door de unieke ligging van de villa’s nabij de plaatsen Nes en Buren maakt u snel even een uitstapje naar één van deze dorpen. Een fietstocht door de duinen en de rest van het eiland voor een actief dagje snel gemaakt. De vakantiehuizen zijn gedurende het hele jaar te huur. Dit kan volgens onderstaande perioden:",
+            "<ul><li>Per weekend</li><li>Per midweek</li><li>Per week</li></ul>",
+            "U kunt dus uw hele vakantie of een weekendje op Ameland vertoeven en genieten in één van onze vakantiehuizen."
+          ],
+          "ctaLabel": "",
+          "ctaUrl": ""
+        }
+      ]
+    },
+    {
+      "type": "hero",
+      "title": "Proef de sfeer van Ameland Residence",
+      "align": "center",
+      "ctaLabel": "Bekijk de video",
+      "ctaUrl": "/video",
+      "video": "/media/ameland-residence-20260730-70de1f-01-ameland-residence-video-desktop.mp4",
+      "mobileVideo": "/media/ameland-residence-20260730-3b11a0-02-ameland-residence-video-mobile01.mp4",
+      "images": [],
+      "mobileImages": []
+    },
+    {
+      "type": "cards",
+      "title": "",
+      "items": [
+        {
+          "title": "Villa's",
+          "text": "",
+          "image": "/media/ameland-residence-20260730-82e81c-banner-home-01-villa-03.jpg",
+          "url": "/villa-s",
+          "linkLabel": "Lees verder"
+        },
+        {
+          "title": "Over Ameland",
+          "text": "",
+          "image": "/media/ameland-residence-20260730-a4b3fd-over-ameland01.jpg",
+          "url": "/over-ameland",
+          "linkLabel": "Lees verder"
+        },
+        {
+          "title": "Villa's met Sauna",
+          "text": "",
+          "image": "/media/ameland-residence-20260730-0c4b9f-villa-met-sauna-ameland.jpg",
+          "url": "/vakantiehuis-met-sauna",
+          "linkLabel": "Lees verder"
+        }
+      ]
+    },
+    {
+      "type": "textImage",
+      "title": "Voorzien van alle luxe",
+      "subtitle": "",
+      "paragraphs": [
+        "Al onze vakantiehuizen op Ameland zijn gesitueerd op bijzondere plekjes nabij het strand en in de duinen. Ieder vakantiehuis is zeer luxe ingericht. Denk bijvoorbeeld aan een badkamer met douche, ligbad en een sauna. Of een sfeerhaard in de woonkamer voor een sfeervolle zomer- of winteravond. Ook zijn de villa’s uitgerust met WiFi voor uw tablet, telefoon op laptop. In onze <a href=\"/blogs/de-ameland-seizoensgids\">Ameland seizoensgids</a> leest u meer over de seizoenen op Ameland.",
+        "Alle luxe vakantievilla's en vakantiehuizen die Ameland Residence verhuurt zijn voorzien van alle gemakken. Iedere villa heeft een sfeervol ingerichte en ruime woonkamer. De keuken is voorzien van allerlei handige snufjes en apparaten. Zo verzorgt de vaatwasser de afwas en kunt u altijd genieten van een lekkere kop koffie of thee. Bij zonnig weer kunt u heerlijk ontspannen op het privé terras. Is het weer een keer regenachtig, stap onder de zonnebank of in de sauna voor een ultiem wellness gevoel."
+      ],
+      "ctaLabel": "",
+      "ctaUrl": "",
+      "image": "/media/ameland-residence-20260730-ebd29e-terras.jpg",
+      "reverse": true
+    }
+  ]
+}

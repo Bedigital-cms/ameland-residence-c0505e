@@ -1,0 +1,10 @@
+{
+  "$comment": "Bestanden die in de BE Digital CMS Content Editor verschijnen. Voor elk bestand rendert het dashboard een volledig recursief formulier — elk veld, elke sectie en elke lijst is bewerkbaar, inclusief alle afbeelding-/mediavelden (paden zoals \"/media/...\"). `path` is de publieke pagina die dit bestand aanstuurt (voor de 'Bekijk pagina'-link). `itemsArePages: true` betekent dat elke sleutel in dat bestand een eigen pagina is; `itemBase` is het URL-segment waaronder die pagina's hangen. Detailpagina's zijn hier GENEST (zoals op de vorige site): sleutel `villa-zee` → `/villa-s/villa-zee`, `fietsen-op-ameland` → `/blogs/fietsen-op-ameland`. pages.json blijft vlak (`itemBase: \"\"`, sleutel `contact` → `/contact`). LET OP: `itemBase` is één waarde per bestand, dus hij staat op de Nederlandse hub — op het Duitse domein heten de villa-URL's `/ferienhauser/...`, waardoor de 'Bekijk pagina'-link bij Duitse villa-items naar de NL-hub wijst (de site zelf linkt altijd correct, die leest de hub uit pages.json). Voeg hier nieuwe content-bestanden toe zodra er pagina's bijkomen.",
+  "files": [
+    { "file": "home.json", "label": "Home", "path": "/" },
+    { "file": "site.json", "label": "Site (merk / navigatie / footer / boekingsmodule)", "path": "/" },
+    { "file": "villas.json", "label": "Villa's (detailpagina's)", "path": "/villa-s", "itemsArePages": true, "itemBase": "/villa-s" },
+    { "file": "blogs.json", "label": "Blogs (artikelen)", "path": "/blogs", "itemsArePages": true, "itemBase": "/blogs" },
+    { "file": "pages.json", "label": "Pagina's (overzichten, landingspagina's, info, voorwaarden)", "path": "/", "itemsArePages": true, "itemBase": "" }
+  ]
+}

@@ -1,0 +1,292 @@
+{
+  "seo": {
+    "title": "Suchen Sie ein Luxusferienhaus auf Ameland? | Ameland Residence",
+    "description": "Möchten Sie ein Ferienhaus auf Ameland mieten? Jede Villa verfügt über luxuriöse Einrichtungen ✔️ Sauna ✔️ Solarium ✔️ Luxuriöses Badezimmer",
+    "keywords": "",
+    "ogImage": "",
+    "robots": "index, follow"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "title": "Geniessen Sie Luxus und Wohlsein auf Ameland",
+      "subtitle": "in einer Ferienwohnung von Ameland Residence",
+      "align": "center",
+      "ctaLabel": "",
+      "ctaUrl": "",
+      "video": "",
+      "mobileVideo": "",
+      "images": [
+        "/media/ameland-residence-20260730-b206f2-header-home-ameland-residence-desktop01.jpg",
+        "/media/ameland-residence-20260730-ca4fa3-header-home-ameland-residence-desktop02.jpg",
+        "/media/ameland-residence-20260730-217e4c-header-home-ameland-residence-desktop03.jpg"
+      ],
+      "mobileImages": [
+        "/media/ameland-residence-20260730-33ae46-header-home-ameland-residence-mobile01.jpg",
+        "/media/ameland-residence-20260730-30841b-header-home-ameland-residence-mobile02.jpg",
+        "/media/ameland-residence-20260730-a88d66-header-home-ameland-residence-mobile03.jpg"
+      ]
+    },
+    {
+      "type": "text",
+      "title": "Suchen und buchen Sie eine Luxusvilla auf Ameland",
+      "subtitle": "Schauen Sie sich hier das aktuelle Angebot an",
+      "paragraphs": [],
+      "ctaLabel": "",
+      "ctaUrl": ""
+    },
+    {
+      "type": "booking",
+      "widget": "zoeken",
+      "accommodationId": ""
+    },
+    {
+      "type": "columns",
+      "background": "effect",
+      "space": {
+        "top": 64,
+        "bottom": 80,
+        "gap": 30
+      },
+      "columns": [
+        {
+          "kind": "text",
+          "title": "Ein luxuriöses Ferienhaus auf Ameland von Ameland Residence",
+          "lead": "Ameland Residence ist der absolute Marktführer für Luxusferienhäuser auf Ameland.",
+          "paragraphs": [
+            "Wir bieten fünf Ferienhäuser zur Miete im Dünengebiet und in Strandnähe zwischen Nes und Buren an. Jedes Ferienhaus ist mit allem Komfort und Luxus ausgestattet, den Sie erwarten, wie zum Beispiel einem Smart-TV mit einem umfangreichen Senderpaket inklusive ESPN, Solarium, Bad und einer großzügigen Terrasse. Darüber hinaus wird ein Luxusbungalow auf dem Roosdunen bei Ballum angeboten. Viel Auswahl für einen luxuriösen Urlaub auf Ameland!"
+          ],
+          "ctaLabel": "",
+          "ctaUrl": ""
+        },
+        {
+          "kind": "list",
+          "items": [
+            {
+              "icon": "/media/ameland-residence-20260730-866369-usp-icoon-pure-luxe01.svg",
+              "label": "Luxus pur",
+              "text": "Ferienhaus mit allem Komfort"
+            },
+            {
+              "icon": "/media/ameland-residence-20260730-57f6df-usp-icoon-duingebied01.svg",
+              "label": "Genießen Sie das Dünengebiet",
+              "text": "In Strandnähe zwischen Nes und Buren"
+            },
+            {
+              "icon": "/media/ameland-residence-20260730-f7dbad-usp-icoon-loopafstand-strand01.svg",
+              "label": "Nur wenige Gehminuten vom Strand entfernt",
+              "text": "Genießen Sie die Meeresbrise und die Brandung."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "collection",
+      "source": "villas",
+      "title": "",
+      "linkLabel": "Mehr Informationen",
+      "marquee": true
+    },
+    {
+      "type": "columns",
+      "bleed": true,
+      "space": {
+        "top": 80,
+        "bottom": 112,
+        "gap": 30
+      },
+      "columns": [
+        {
+          "kind": "gallery",
+          "images": [
+            "/media/ameland-residence-20260730-bf515d-sfeer-afbeelding-02.jpg",
+            "/media/ameland-residence-20260730-396398-sfeer-afbeelding-03.jpg",
+            "/media/ameland-residence-20260730-792736-sfeer-afbeelding-04.jpg",
+            "/media/ameland-residence-20260730-a0f09d-sfeer-afbeelding-05.jpg"
+          ]
+        },
+        {
+          "kind": "group",
+          "blocks": [
+            {
+              "kind": "text",
+              "title": "Ferienhaus auf Ameland",
+              "lead": "Genießen Sie Ruhe, frische Luft und das Zusammensein.",
+              "paragraphs": [
+                "Entferne dich von allem! Genießen Sie Ruhe, frische Luft und das Zusammensein mit Familie oder Freunden. Dies können Sie während eines Urlaubs auf Ameland tun. Unsere luxuriösen Ferienhäuser und Dünenvillen liegen an einem der schönsten Orte auf Ameland in den Dünen nördlich von Nes en Buren. Wir haben auch einen schönen Bungalow am Roosdunen in der Nähe von Ballum. Unsere wunderschönen reetgedeckten Villen garantieren einen erholsamen Aufenthalt und bieten viel Privatsphäre. Der Strand, die Dörfer und die Wälder sind leicht erreichbar. Sie befinden sich mitten in einer wunderschönen Gegend zum Wandern, Radfahren oder Entspannen am Strand. Ein Urlaub auf Ameland bedeutet Entspannung, Vergnügen und Spaß. Unsere Ferienhäuser sind alle mit einer Reihe luxuriöser Annehmlichkeiten ausgestattet, wie zum Beispiel:"
+              ],
+              "ctaLabel": "",
+              "ctaUrl": ""
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Sauna",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Badezimmer mit Badewanne",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Großzügiger Garten mit großzügiger Terrasse",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Solarium",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Smart-TV mit umfangreichem Senderpaket inklusive ESPN",
+                  "text": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "columns",
+      "background": "mint",
+      "widths": [
+        324,
+        400,
+        572
+      ],
+      "space": {
+        "top": 64,
+        "bottom": 64,
+        "gap": 16
+      },
+      "columns": [
+        {
+          "kind": "group",
+          "blocks": [
+            {
+              "kind": "text",
+              "title": "Ameland Residence",
+              "lead": "",
+              "paragraphs": [],
+              "ctaLabel": "",
+              "ctaUrl": ""
+            },
+            {
+              "kind": "list",
+              "items": [
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Luxusunterkünfte",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Tolle Gastfreundschaft",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Wettbewerbsfähige Preise",
+                  "text": ""
+                },
+                {
+                  "icon": "/media/ameland-residence-20260730-9165f8-usp-icoon-bruin-met-zwart02.svg",
+                  "label": "Besondere Orte auf Ameland",
+                  "text": ""
+                }
+              ]
+            },
+            {
+              "kind": "text",
+              "title": "",
+              "lead": "",
+              "paragraphs": [],
+              "ctaLabel": "Kontaktiere uns",
+              "ctaUrl": "/kontakt"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "title": "Last minutes",
+          "lead": "",
+          "paragraphs": [
+            "Sie möchten kurzfristig für eine Weile verreisen? Möchten Sie in einer wunderschönen Umgebung so richtig entspannen? Wir haben unsere besten Last-Minute-Angebote speziell für Sie ausgewählt. Schauen Sie sich unsere preisgünstigen Angebote an und buchen Sie Ihren Urlaub auf Ameland!"
+          ],
+          "ctaLabel": "Sehen Sie sich unsere letzten Minuten an",
+          "ctaUrl": "/last-minutes"
+        },
+        {
+          "kind": "text",
+          "title": "Viele Möglichkeiten in unseren Ferienhäusern",
+          "lead": "",
+          "paragraphs": [
+            "Aufgrund der einzigartigen Lage der Villen in der Nähe der Städte Nes und Buren können Sie schnell einen Ausflug in eines dieser Dörfer unternehmen. Eine kurze Radtour durch die Dünen und den Rest der Insel für einen aktiven Tag. Die Ferienhäuser können das ganze Jahr über gemietet werden. Dies kann nach folgenden Zeiträumen erfolgen:",
+            "<ul><li>Pro Wochenende</li><li>Pro Wochenmitte</li><li>Wöchentlich</li></ul>",
+            "So können Sie Ihren gesamten Urlaub oder ein Wochenende auf Ameland verbringen und es in einem unserer Ferienhäuser genießen."
+          ],
+          "ctaLabel": "",
+          "ctaUrl": ""
+        }
+      ]
+    },
+    {
+      "type": "hero",
+      "title": "Probieren Sie die Atmosphäre der Ameland Residence",
+      "align": "center",
+      "ctaLabel": "Schau das Video",
+      "ctaUrl": "/video",
+      "video": "/media/ameland-residence-20260730-70de1f-01-ameland-residence-video-desktop.mp4",
+      "mobileVideo": "/media/ameland-residence-20260730-3b11a0-02-ameland-residence-video-mobile01.mp4",
+      "images": [],
+      "mobileImages": []
+    },
+    {
+      "type": "cards",
+      "title": "",
+      "items": [
+        {
+          "title": "Ferienhäuser",
+          "text": "",
+          "image": "/media/ameland-residence-20260730-82e81c-banner-home-01-villa-03.jpg",
+          "url": "/ferienhauser",
+          "linkLabel": "mehr lesen"
+        },
+        {
+          "title": "Über Ameland",
+          "text": "",
+          "image": "/media/ameland-residence-20260730-a4b3fd-over-ameland01.jpg",
+          "url": "/uber-ameland",
+          "linkLabel": "mehr lesen"
+        },
+        {
+          "title": "Ferienhäuser mit Sauna",
+          "text": "",
+          "image": "/media/ameland-residence-20260730-0c4b9f-villa-met-sauna-ameland.jpg",
+          "url": "/ferienhaus-mit-sauna",
+          "linkLabel": "mehr lesen"
+        }
+      ]
+    },
+    {
+      "type": "textImage",
+      "title": "Ausgestattet mit allem Luxus",
+      "subtitle": "",
+      "paragraphs": [
+        "Alle unsere Ferienhäuser auf Ameland liegen an besonderen Orten in Strandnähe und in den Dünen. Jedes Ferienhaus ist luxuriös eingerichtet. Stellen Sie sich zum Beispiel ein Badezimmer mit Dusche, Badewanne und Sauna vor. Oder ein dekorativer Kamin im Wohnzimmer für einen stimmungsvollen Sommer- oder Winterabend. Die Villen sind außerdem mit WLAN für Ihr Tablet, Telefon oder Laptop ausgestattet.",
+        "Alle Ferienhäuser, die Ameland Residence vermietet, sind mit jeglichem Luxus ausgestattet. Jede Villa verfügt über ein ansprechend eingerichtetes und geräumiges Wohnzimmer. Die Küche ist mit allerlei nützlichen Gadgets und Geräten ausgestattet. Der Geschirrspüler kümmert sich um den Abwasch und Sie können jederzeit eine schöne Tasse Kaffee oder Tee genießen. Bei sonnigem Wetter können Sie auf der privaten Terrasse entspannen. Sollte es mal wieder regnen, gönnen Sie sich ein ultimatives Wellness-Gefühl unter der Sonnenbank oder in der Sauna."
+      ],
+      "ctaLabel": "",
+      "ctaUrl": "",
+      "image": "/media/ameland-residence-20260730-ebd29e-terras.jpg",
+      "reverse": true
+    }
+  ]
+}

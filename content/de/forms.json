@@ -1,0 +1,20 @@
+{
+  "$comment": "Deutsche Anzeigetexte für die Formulare — übernommen von der bestehenden .de-Website. Gleiche Struktur wie content/forms.json; nur label/placeholder/submitLabel/successMessage sind übersetzbar. Wird über den CMS-Formulareditor gepflegt.",
+  "forms": {
+    "contact": {
+      "name": "Kontakt",
+      "submitLabel": "Senden",
+      "successMessage": "Danke für Ihre Nachricht. Wir melden uns so schnell wie möglich bei Ihnen.",
+      "isActive": true,
+      "fields": [
+        { "name": "full_name", "label": "Name", "fieldType": "text", "required": true, "placeholder": "Ihr Name" },
+        { "name": "address", "label": "Adresse", "fieldType": "text", "required": false, "placeholder": "Straße und Hausnummer" },
+        { "name": "postal_code", "label": "Postleitzahl", "fieldType": "text", "required": false, "placeholder": "12345" },
+        { "name": "city", "label": "Ort", "fieldType": "text", "required": false, "placeholder": "Ihr Wohnort" },
+        { "name": "telephone", "label": "Telefonnummer", "fieldType": "tel", "required": false, "placeholder": "+49 123 456789" },
+        { "name": "email", "label": "E-Mail-Adresse", "fieldType": "email", "required": true, "placeholder": "sie@beispiel.de" },
+        { "name": "query", "label": "Frage und/oder Kommentar", "fieldType": "textarea", "required": true, "placeholder": "Womit können wir Ihnen helfen?" }
+      ]
+    }
+  }
+}

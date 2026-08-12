@@ -1,0 +1,21 @@
+{
+  "$comment": "Canonieke formulierdefinitie (structuur + notificatie-e-mail), taal-neutraal. Veldnamen zijn in ELKE taal identiek — daar valideert het CMS de inzending op. Vertaalde labels/placeholders staan in content/<taal>/forms.json en worden door de CMS Formulieren-editor beheerd.",
+  "forms": {
+    "contact": {
+      "name": "Contact",
+      "submitLabel": "Verzenden",
+      "successMessage": "Bedankt voor uw bericht. We nemen zo snel mogelijk contact met u op.",
+      "notificationEmail": "info@ameland-residence.nl",
+      "isActive": true,
+      "fields": [
+        { "name": "full_name", "label": "Naam", "fieldType": "text", "required": true, "placeholder": "Uw naam" },
+        { "name": "address", "label": "Adres", "fieldType": "text", "required": false, "placeholder": "Straat en huisnummer" },
+        { "name": "postal_code", "label": "Postcode", "fieldType": "text", "required": false, "placeholder": "1234 AB" },
+        { "name": "city", "label": "Plaats", "fieldType": "text", "required": false, "placeholder": "Uw woonplaats" },
+        { "name": "telephone", "label": "Telefoonnummer", "fieldType": "tel", "required": false, "placeholder": "+31 6 12 34 56 78" },
+        { "name": "email", "label": "E-mailadres", "fieldType": "email", "required": true, "placeholder": "u@voorbeeld.nl" },
+        { "name": "query", "label": "Vraag en/of opmerking", "fieldType": "textarea", "required": true, "placeholder": "Waarmee kunnen wij u helpen?" }
+      ]
+    }
+  }
+}

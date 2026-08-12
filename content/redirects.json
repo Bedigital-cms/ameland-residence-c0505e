@@ -1,0 +1,4 @@
+{
+  "$comment": "URL-omleidingen (301). LEEG EN DAT IS DE BEDOELING: dit template gebruikt exact dezelfde URL-structuur als de vorige site — villa's genest onder de villa-hub (/villa-s/villa-zee, .de: /ferienhauser/villa-zee) en artikelen onder /blogs/<slug>, alle overige pagina's vlak (/contact, /over-ons, /zoek-boek). Alle 89 NL- en 51 DE-URL's uit de oude sitemaps blijven dus 200 en hebben geen omleiding nodig; een redirect zou hier juist een extra hop en verlies van linkwaarde betekenen. Voeg alleen een regel toe als een URL ECHT verandert (of als er een oude URL opduikt die niet in de sitemap stond). Regels zijn vlak en zonder taalprefix — next.config.ts leest dit bestand en zet ze om naar één 301-hop per taal. Beheer via de CMS Redirects-editor of de AI-agent.",
+  "redirects": []
+}
