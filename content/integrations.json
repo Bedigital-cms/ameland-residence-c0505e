@@ -1,0 +1,5 @@
+{
+  "$comment": "Externe integraties (widgets/trackers) van deze site, beheerd door de BE Digital CMS. Niet met de hand aanpassen — wijzig het via Tenants → Integraties, zodat CMS en site synchroon blijven. `providers` zijn de bekende koppelingen: de site bouwt zelf de juiste snippet, de klant vult alleen de instellingen in. `customScripts` is de escape-hatch voor eenmalige/onbekende code en is ALLEEN voor superadmins — vrije scripts draaien met volledige rechten op de pagina.",
+  "providers": [],
+  "customScripts": []
+}
