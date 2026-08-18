@@ -475,11 +475,15 @@ function CollectionBlock({ source, title, linkLabel, marquee, ctx }: { source: '
   )
 }
 
-function GalleryBlock({ data }: { data: GallerySection }) {
+/**
+ * `preview` hoort bij de villapagina's: die dragen 25-30 foto's, en die allemaal onder elkaar
+ * tonen rekt de pagina eindeloos op. Losse pagina's met een handvol foto's houden de tegelgrid.
+ */
+function GalleryBlock({ data, preview = false }: { data: GallerySection; preview?: boolean }) {
   return (
     <section className="section section-gallery">
       <div className="container">
-        <Gallery images={data.images} alt="Foto" />
+        <Gallery images={data.images} alt="Foto" preview={preview} />
       </div>
     </section>
   )
@@ -756,7 +760,7 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
         </div>
       </section>
 
-      {villa.gallery.length > 0 && <GalleryBlock data={{ type: 'gallery', images: villa.gallery }} />}
+      {villa.gallery.length > 0 && <GalleryBlock data={{ type: 'gallery', images: villa.gallery }} preview />}
       {villa.features.length > 0 && <FeaturesBlock data={{ type: 'features', groups: villa.features }} />}
       {villa.tommyId && <BookingBlock widget="boeken" accommodationId={villa.tommyId} ctx={ctx} />}
       <Sections sections={villa.extraSections} ctx={ctx} />

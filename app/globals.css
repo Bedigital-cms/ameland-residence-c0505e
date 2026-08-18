@@ -138,6 +138,10 @@ li { margin-bottom: 0.35em; }
   margin-bottom: 14px;
 }
 
+/* Elke <RichText> is een eigen .prose-blok, en de inhoud draagt zijn eigen ondermarge. Blijft die
+   marge uit (een <ul> of <h3> die zijn eigen opmaak meebrengt), dan houdt deze regel de blokken
+   alsnog uit elkaar; de laatste marge binnen een blok gaat er hieronder weer af. */
+.prose:not(:last-child) { margin-bottom: 1.05em; }
 .prose > :last-child { margin-bottom: 0; }
 .prose h3 { margin-top: 1.6em; }
 /* Gewone ronde opsommingstekens — zo staat lopende tekst op de bestaande site (browserstandaard),
@@ -918,6 +922,49 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 .gallery-tile img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; transition: transform 0.5s, opacity 0.3s; }
 .gallery-tile:hover img { transform: scale(1.06); opacity: 0.92; }
 
+/* Voorvertoning op de villapagina's: een grote cover met vier kleinere ernaast. De rest van de
+   reeks zit achter de knop eronder, zodat 25-30 foto's de pagina niet meer oprekken. */
+.gallery--preview { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; }
+.gallery--preview .gallery-tile { position: relative; }
+.gallery--preview .gallery-tile:first-child { grid-column: span 2; grid-row: span 2; }
+.gallery--preview .gallery-tile:first-child img { aspect-ratio: auto; height: 100%; }
+
+/* Het aantal resterende foto's, op de laatste tegel van de voorvertoning. */
+.gallery-tile-more {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(24, 26, 26, 0.52);
+  color: #fff;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.gallery-open {
+  /* Gecentreerd onder de galerij: de knop hoort bij het raster erboven, niet bij de tekstkolom
+     links ervan. `margin-inline: auto` op een flex-item vraagt om display:flex, niet inline-flex. */
+  display: flex;
+  width: fit-content;
+  margin-inline: auto;
+  align-items: center;
+  gap: 9px;
+  margin-top: 20px;
+  padding: 12px 24px;
+  border: 1px solid var(--sage);
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.86rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+.gallery-open:hover { background: var(--sage); color: #fff; }
+
 .lightbox {
   position: fixed;
   inset: 0;
@@ -928,6 +975,8 @@ a.card:hover .card-link svg { transform: translateX(4px); }
   background: rgba(24, 26, 26, 0.94);
 }
 .lightbox-img { max-width: min(1200px, 92vw); max-height: 86vh; object-fit: contain; border-radius: var(--radius); }
+/* Ruimte onderaan voor de thumbnailstrip plus de teller. */
+.lightbox:has(.lightbox-thumbs) .lightbox-img { max-height: calc(86vh - 84px); }
 .lightbox-close, .lightbox-nav {
   position: absolute;
   display: grid;
@@ -947,6 +996,52 @@ a.card:hover .card-link svg { transform: translateX(4px); }
 .lightbox-next { right: 18px; }
 .lightbox-close:hover, .lightbox-nav:hover { background: rgba(255, 255, 255, 0.2); }
 .lightbox-count { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: rgba(255, 255, 255, 0.75); font-size: 0.82rem; letter-spacing: 0.1em; }
+
+/* Een balk over de volle breedte achter de strip en de teller. Zonder die ondergrond schemert de
+   paginatekst door de overlay heen tussen de thumbnails door, en is niet te zien waar de galerij
+   ophoudt. `:has` valt terug op niets als de browser het niet kent — dan blijft alleen de overlay
+   over, wat de oude situatie is. */
+.lightbox:has(.lightbox-thumbs)::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 108px;
+  background: linear-gradient(to top, rgba(18, 20, 20, 0.96) 62%, rgba(18, 20, 20, 0));
+  pointer-events: none;
+}
+.lightbox-thumbs, .lightbox-count { z-index: 1; }
+
+/* Bladeren door de hele reeks zonder de pijlen af te tellen; de actieve thumbnail scrollt mee. */
+.lightbox-thumbs {
+  position: absolute;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  max-width: min(1200px, 92vw);
+  padding: 8px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.lightbox-thumbs::-webkit-scrollbar { display: none; }
+.lightbox-thumb {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: none;
+  cursor: pointer;
+  opacity: 0.45;
+  outline: 2px solid transparent;
+  transition: opacity 0.3s, outline-color 0.3s;
+}
+.lightbox-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.lightbox-thumb:hover { opacity: 0.8; }
+.lightbox-thumb.is-active { opacity: 1; outline-color: rgba(255, 255, 255, 0.85); }
 
 /* ----------------------------------------------------------------- features */
 
@@ -1384,6 +1479,13 @@ html:root { font-size: 16px; }
   .cols--3[style*='--cols-widths'], .cols--4[style*='--cols-widths'] { grid-template-columns: repeat(2, 1fr); }
   .cardgrid--3 { grid-template-columns: repeat(2, 1fr); }
   .gallery { grid-template-columns: repeat(3, 1fr); }
+  /* De cover krijgt een eigen rij over de volle breedte, de vier thumbnails de rij eronder. De
+     tegelgrid ernaast blijft driekoloms. `grid-auto-rows: 1fr` hoort bij de tweekoloms cover van
+     het brede scherm; hier zou het de thumbnailrij tot coverhoogte oprekken en dus gaten onder de
+     foto's laten. */
+  .gallery--preview { grid-template-columns: repeat(4, 1fr); grid-auto-rows: auto; }
+  .gallery--preview .gallery-tile:first-child { grid-column: span 4; grid-row: auto; }
+  .gallery--preview .gallery-tile:first-child img { aspect-ratio: 16 / 9; height: auto; }
   /* De 70/30- en 40/60-rijen stapelen; de bestaande site doet dat rond dezelfde breedte. Bij de
      full-bleed rij blijft de foto tegen de rand en krijgt de tekst weer normale marges. */
   .reviewgrid { grid-template-columns: repeat(2, 1fr); }
@@ -1410,9 +1512,14 @@ html:root { font-size: 16px; }
   .footer-cols > .footer-col { flex-basis: 100%; min-width: 0; margin-block: 0.75em; }
   .footer-linkcols > div { flex-basis: 100%; }
   .footer-cols > .footer-badge { align-self: flex-start; }
-  .lightbox-nav { width: 42px; height: 42px; }
-  .lightbox-prev { left: 8px; }
-  .lightbox-next { right: 8px; }
+  /* De cover boven, de vier thumbnails in twee rijen eronder. */
+  .gallery--preview { grid-template-columns: repeat(2, 1fr); grid-auto-rows: auto; }
+  .gallery--preview .gallery-tile:first-child { grid-column: span 2; }
+  .gallery-open { width: 100%; max-width: 420px; justify-content: center; }
+  /* Op deze breedte liggen de pijlen strak op de foto en dekken ze net af waar je naar kijkt.
+     Vegen doet hier hetzelfde werk, en de thumbnailstrip blijft als tweede manier om te bladeren. */
+  .lightbox-nav { display: none; }
+  .lightbox-thumb { width: 52px; height: 36px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
