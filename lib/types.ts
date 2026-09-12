@@ -194,8 +194,15 @@ export type CollectionSection = {
 /** Photo grid / lightbox strip. */
 export type GallerySection = { type: 'gallery'; images: string[] }
 
+/**
+ * One item in a villa's checklist. Usually plain text; the object form carries a separate quantity
+ * so a count never has to be parsed back out of the label. Read them through `featureLabel()` /
+ * `featureText()` in `lib/features.ts` — never inline, or the object form renders as "[object Object]".
+ */
+export type FeatureItem = string | { label: string; qty?: number }
+
 /** Checklist groups ("Indeling benedenverdieping", …) on a villa page. */
-export type FeaturesSection = { type: 'features'; groups: { heading: string; items: string[] }[] }
+export type FeaturesSection = { type: 'features'; groups: { heading: string; items: FeatureItem[] }[] }
 
 /**
  * The Tommy Booking Support widget.
@@ -304,6 +311,14 @@ export type VillaContent = {
   subtitle: string
   /** Tommy accommodation id — drives the booking calendar on this villa's page. */
   tommyId: string
+  /**
+   * Capacity, as stated in the villa's own content. Authoritative for the VacationRental structured
+   * data (`lib/villa-filter.ts` → `villaAttributes`); `lib/villa-facts.ts` reads the prose only as a
+   * fallback, which published occupancy on one villa of five when it was the sole source.
+   */
+  guests?: number
+  bedrooms?: number
+  bathrooms?: number
   cardImage: string
   cardText: string
   linkLabel?: string
@@ -334,7 +349,7 @@ export type VillaContent = {
   moreParagraphs: Html[]
   highlights: string[]
   gallery: string[]
-  features: { heading: string; items: string[] }[]
+  features: { heading: string; items: FeatureItem[] }[]
   /** Free-form sections appended below the fixed villa layout. */
   extraSections: Section[]
   seo: Seo

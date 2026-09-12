@@ -1,13 +1,22 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-import { Sections, type RenderCtx } from '@/components/sections'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { JsonLd } from '@/components/JsonLd'
+import { Sections, type RenderCtx, type SectionOpts } from '@/components/sections'
 import { Shell } from '@/components/Shell'
+import { pageTrail } from '@/content/breadcrumbs'
 import { buildCtx, type SearchParams } from '@/content/ctx'
+import { pageEquivalents } from '@/content/equivalents'
 import { getPage, getPageSlugs } from '@/content/pages'
+import { getSite } from '@/content/site'
 import { activeLocales } from '@/lib/i18n'
+import { breadcrumbList, graph } from '@/lib/jsonld'
+import { ogImageForPage } from '@/lib/og-image'
+import { pageHeading } from '@/lib/page-heading'
 import { metadataFrom } from '@/lib/seo'
 import type { PageContent, Section, TextSection } from '@/lib/types'
+import { t } from '@/lib/ui-text'
 
 /**
  * Every PAGE on this site except the homepage: the hubs (`/villa-s`, `/blogs`), the functional
@@ -41,7 +50,16 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params
   const page = getPage(locale, slug)
-  return page ? metadataFrom(page.seo, page.title) : {}
+  if (!page) return {}
+  return metadataFrom(
+    page.seo,
+    page.title,
+    { locale, equivalents: pageEquivalents(locale, slug) },
+    // `page.sections`, not the `kind`-expanded list: the sections added there (the search results,
+    // the generated sitemap, the contact form) carry no photograph, so searching them would find
+    // nothing while making the share image depend on rendering logic rather than editable content.
+    ogImageForPage(page.seo?.ogImage, page.sections),
+  )
 }
 
 /**
@@ -49,7 +67,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
  * page already has — the contact page gets the form, the sitemap page gets the generated index —
  * so the editable content stays in charge of the rest of the layout.
  */
-function renderPage(page: PageContent, ctx: RenderCtx) {
+function pageSections(page: PageContent): Section[] {
   const sections: Section[] = [...page.sections]
   const has = (type: Section['type']) => sections.some((s) => s.type === type)
 
@@ -95,7 +113,7 @@ function renderPage(page: PageContent, ctx: RenderCtx) {
     default:
       break
   }
-  return <Sections sections={sections} ctx={ctx} />
+  return sections
 }
 
 export default async function Page({
@@ -108,6 +126,76 @@ export default async function Page({
   const { locale, slug } = await params
   const page = getPage(locale, slug)
   if (!page) notFound()
+
   // The Zoek & boek page is addressed by `?range=`, so the query is part of what it renders.
-  return <Shell locale={locale}>{renderPage(page, await buildCtx(locale, await searchParams))}</Shell>
+  const ctx: RenderCtx = await buildCtx(locale, await searchParams)
+  const site = getSite(locale)
+  const sections = pageSections(page)
+
+  /**
+   * Give the page exactly one <h1>.
+   *
+   * Every `pages.json` hero stores `title: ""` and `HeroBlock` renders its title as a <p>, so these
+   * pages shipped with NO h1 and a heading tree starting at <h2>. `pageHeading` recovers the heading
+   * the page ALREADY displays — no new copy — and renders it as the <h1> in the hero, suppressing the
+   * now-duplicate heading at its old position.
+   *
+   * It runs on the FINAL section list (after `pageSections`), so it sees the sections that actually
+   * render. That matters for the contact page, where the text section moves inside the form: it is no
+   * longer a top-level section, so the page falls through to its own title instead.
+   */
+  const heading = pageHeading(sections, page.title)
+  const crumbLabel = t(locale, 'breadcrumb')
+  // The trail names this page by its H1, not by its SEO title (which carries a "| brand" suffix).
+  const trail = pageTrail(locale, slug, site.brandName, heading.text)
+
+  const opts: Record<number, SectionOpts> = {}
+  const hasHeroH1 = heading.heroIndex >= 0 && !!heading.text
+
+  if (hasHeroH1) {
+    // Promote into the hero: inject the text as the hero title, mark it as the h1, add the crumbs.
+    const hero = sections[heading.heroIndex]
+    if (hero.type === 'hero' && !hero.title.trim()) {
+      sections[heading.heroIndex] = { ...hero, title: heading.text }
+    }
+    opts[heading.heroIndex] = {
+      heading: true,
+      crumbs: <Breadcrumb trail={trail} label={crumbLabel} variant="onImage" />,
+    }
+    // Only suppress the old location when the hero took ITS text (not when the hero had its own).
+    if (heading.fromSection >= 0) opts[heading.fromSection] = { suppressTitle: true }
+  } else if (heading.fromSection >= 0) {
+    // No hero on this page — the existing section heading becomes the h1 where it already sits.
+    opts[heading.fromSection] = { headingLevel: 1 }
+  } else if (heading.text) {
+    /**
+     * No hero AND no section carrying a heading — the booking pages (`/zoek-boek`,
+     * `/suchen-buchen`) are just an empty text section plus the results block. Give the page its
+     * heading by filling that empty text section's title with the page's own title, so the h1 lands
+     * above the results instead of nowhere.
+     */
+    const target = sections.findIndex((s) => s.type === 'text' || s.type === 'textImage')
+    if (target >= 0) {
+      const sec = sections[target]
+      if ((sec.type === 'text' || sec.type === 'textImage') && !sec.title.trim()) {
+        sections[target] = { ...sec, title: heading.text }
+      }
+      opts[target] = { headingLevel: 1 }
+    }
+  }
+
+  const jsonld = graph([breadcrumbList(locale, trail)])
+
+  return (
+    <Shell locale={locale}>
+      <JsonLd json={jsonld} />
+      {/* Pages without a hero image show the trail on the light background, above the content. */}
+      {!hasHeroH1 && trail.length > 1 && (
+        <div className="container crumbs--standalone">
+          <Breadcrumb trail={trail} label={crumbLabel} />
+        </div>
+      )}
+      <Sections sections={sections} ctx={ctx} opts={opts} />
+    </Shell>
+  )
 }

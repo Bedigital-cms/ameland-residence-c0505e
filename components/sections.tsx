@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 
 import type { Availability, DateRange } from '@/lib/availability'
+import { featureText } from '@/lib/features'
 import { toDutchDate } from '@/lib/availability'
 import type {
   BannersSection,
@@ -536,12 +537,16 @@ export function FeaturesBlock({ data }: { data: FeaturesSection }) {
           <div className="feature-group" key={g.heading}>
             <h3>{g.heading}</h3>
             <ul>
-              {g.items.map((item) => (
-                <li key={item}>
-                  <Icon name="check" size={15} />
-                  <span>{item}</span>
-                </li>
-              ))}
+              {g.items.map((item, i) => {
+                // Via featureText, nooit inline: de objectvorm zou anders "[object Object]" worden.
+                const text = featureText(item)
+                return (
+                  <li key={text + i}>
+                    <Icon name="check" size={15} />
+                    <span>{text}</span>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         ))}
@@ -770,10 +775,13 @@ export function Sections({
 /* ----------------------------------------------------------- page layouts */
 
 /** Villa detail: hero → USP strip → intro + highlights → gallery → indeling → booking → extras. */
-export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx }) {
+export function VillaPage({ villa, ctx, crumbs }: { villa: VillaContent; ctx: RenderCtx; crumbs?: ReactNode }) {
   return (
     <>
-      <HeroBlock data={{ type: 'hero', title: '', ctaLabel: '', ctaUrl: '', video: '', mobileVideo: '', images: villa.hero.images, mobileImages: villa.hero.mobileImages }} />
+      <HeroBlock
+        data={{ type: 'hero', title: '', ctaLabel: '', ctaUrl: '', video: '', mobileVideo: '', images: villa.hero.images, mobileImages: villa.hero.mobileImages }}
+        crumbs={crumbs}
+      />
 
       {villa.usps.length > 0 && (
         <section className="uspbar">
@@ -829,11 +837,13 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
 }
 
 /** Blog article: image + title + heading/paragraph body, then a villa grid as the conversion step. */
-export function BlogPage({ blog, ctx }: { blog: BlogContent; ctx: RenderCtx }) {
+export function BlogPage({ blog, ctx, crumbs }: { blog: BlogContent; ctx: RenderCtx; crumbs?: ReactNode }) {
   return (
     <>
       <article className="section article">
         <div className="container container--narrow">
+          {/* Geen hero-afbeelding op een artikel: het kruimelpad staat op de lichte achtergrond. */}
+          {crumbs && <div className="crumbs--standalone">{crumbs}</div>}
           <h1>{blog.title}</h1>
           {blog.excerpt && <p className="article-lead">{blog.excerpt}</p>}
           {blog.image && (

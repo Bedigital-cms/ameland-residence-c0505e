@@ -14,3 +14,4 @@ next-env.d.ts
 # <cms>/media/_import/ameland-residence/ and run CMS → Media → "Importeren". They must not travel
 # with every tenant copy of this repo. See MEDIA.md.
 /_import
+.next-verify

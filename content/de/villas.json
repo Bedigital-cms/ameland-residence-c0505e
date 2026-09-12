@@ -260,7 +260,10 @@
     "priceTo": 3630,
     "priceNote": "Wochenpreis exklusive Nebenkosten. Der genaue Preis hängt vom gewählten Zeitraum ab.",
     "latitude": 53.4539852,
-    "longitude": 5.7741094
+    "longitude": 5.7741094,
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 2
   },
   "villa-stern": {
     "title": "Villa Stern",
@@ -512,7 +515,10 @@
     "priceTo": 3630,
     "priceNote": "Wochenpreis exklusive Nebenkosten. Der genaue Preis hängt vom gewählten Zeitraum ab.",
     "latitude": 53.4553875,
-    "longitude": 5.7898754
+    "longitude": 5.7898754,
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 1
   },
   "villa-zilt": {
     "title": "Villa Zilt",
@@ -769,7 +775,10 @@
     "priceTo": 3630,
     "priceNote": "Wochenpreis exklusive Nebenkosten. Der genaue Preis hängt vom gewählten Zeitraum ab.",
     "latitude": 53.4559145,
-    "longitude": 5.7892907
+    "longitude": 5.7892907,
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 2
   },
   "villa-nova": {
     "title": "Villa Nova",
@@ -1026,7 +1035,10 @@
     "priceTo": 3695,
     "priceNote": "Wochenpreis exklusive Nebenkosten. Der genaue Preis hängt vom gewählten Zeitraum ab.",
     "latitude": 53.4546155,
-    "longitude": 5.7751726
+    "longitude": 5.7751726,
+    "guests": 8,
+    "bedrooms": 4,
+    "bathrooms": 2
   },
   "luxesbungalow-watersnip": {
     "title": "Luxusbungalow Watersnip",
@@ -1142,6 +1154,9 @@
     "priceTo": 1985,
     "priceNote": "Wochenpreis exklusive Nebenkosten. Der genaue Preis hängt vom gewählten Zeitraum ab.",
     "latitude": 53.4484859,
-    "longitude": 5.6967457
+    "longitude": 5.6967457,
+    "guests": 6,
+    "bedrooms": 3,
+    "bathrooms": 1
   }
 }
