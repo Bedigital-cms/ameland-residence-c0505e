@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 import type { Availability, DateRange } from '@/lib/availability'
 import { toDutchDate } from '@/lib/availability'
@@ -74,11 +74,31 @@ export type RenderCtx = {
 
 /* ------------------------------------------------------------------ pieces */
 
-export function SectionTitle({ title, subtitle }: { title?: string; subtitle?: string }) {
-  if (!title && !subtitle) return null
+/**
+ * A section's own heading. Renders an <h2> by default.
+ *
+ * `suppressTitle` drops the heading text but keeps the subtitle: used when this section's title has
+ * been promoted to the page's <h1> in the hero (see `lib/page-heading.ts`), so the same words are not
+ * printed twice on the page.
+ */
+export function SectionTitle({
+  title,
+  subtitle,
+  suppressTitle = false,
+  headingLevel = 2,
+}: {
+  title?: string
+  subtitle?: string
+  suppressTitle?: boolean
+  /** 1 makes this section's title the page <h1> — for pages with no hero to host it. Default 2. */
+  headingLevel?: 1 | 2
+}) {
+  const showTitle = !!title && !suppressTitle
+  if (!showTitle && !subtitle) return null
+  const H = headingLevel === 1 ? 'h1' : 'h2'
   return (
     <header className="section-head">
-      {title && <h2>{title}</h2>}
+      {showTitle && <H>{title}</H>}
       {subtitle && <p className="section-sub">{subtitle}</p>}
     </header>
   )
@@ -164,9 +184,27 @@ function CardMarquee({ items, variant }: { items: Card[]; variant: CardVariant }
 
 /* ---------------------------------------------------------------- sections */
 
-function HeroBlock({ data }: { data: HeroSection }) {
+/**
+ * `heading` turns the overlay title into the page's real <h1> (instead of the decorative <p> this
+ * component uses for every hero). Pass it on exactly ONE hero per page — the routes derive it from
+ * existing content via `lib/page-heading.ts`, so no new copy is written and no page gets two H1s.
+ *
+ * `crumbs` renders the breadcrumb trail over the image, above the heading.
+ */
+function HeroBlock({
+  data,
+  heading,
+  crumbs,
+}: {
+  data: HeroSection
+  /** Render the title as this page's <h1>. */
+  heading?: boolean
+  /** Breadcrumb trail placed above the title, inside the overlay. */
+  crumbs?: ReactNode
+}) {
   const hasMedia = !!(data.video || data.images.length || data.mobileImages.length)
-  if (!hasMedia && !data.title) return null
+  if (!hasMedia && !data.title && !crumbs) return null
+  const Title = heading ? 'h1' : 'p'
   return (
     <section className={`hero${data.video ? ' hero--video' : ''}`}>
       {data.video ? (
@@ -176,10 +214,11 @@ function HeroBlock({ data }: { data: HeroSection }) {
       ) : (
         <HeroSlider images={data.images} mobileImages={data.mobileImages} alt={data.title || 'Ameland Residence'} />
       )}
-      {(data.title || data.subtitle || data.ctaLabel) && (
+      {(data.title || data.subtitle || data.ctaLabel || crumbs) && (
         <div className={`hero-overlay${data.align === 'center' ? ' hero-overlay--center' : ''}`}>
           <div className="container">
-            {data.title && <p className="hero-title">{data.title}</p>}
+            {crumbs}
+            {data.title && <Title className="hero-title">{data.title}</Title>}
             {data.subtitle && <p className="hero-sub">{data.subtitle}</p>}
             {/* `.hero-overlay .btn` geeft de knop hier zijn eigen doorschijnende stijl. */}
             <Cta label={data.ctaLabel} url={data.ctaUrl} />
@@ -190,14 +229,14 @@ function HeroBlock({ data }: { data: HeroSection }) {
   )
 }
 
-function TextBlock({ data }: { data: TextSection }) {
+function TextBlock({ data, suppressTitle, headingLevel }: { data: TextSection; suppressTitle?: boolean; headingLevel?: 1 | 2 }) {
   // Some pages carry a text section with every field blank (a placeholder the CMS left behind).
   // Rendering it would add an empty band of section padding above the real content.
   if (!data.title && !data.subtitle && !data.paragraphs.length && !data.ctaLabel) return null
   return (
     <section className="section section-text">
       <div className="container container--narrow">
-        <SectionTitle title={data.title} subtitle={data.subtitle} />
+        <SectionTitle title={data.title} subtitle={data.subtitle} suppressTitle={suppressTitle} headingLevel={headingLevel} />
         {data.paragraphs.map((html, i) => (
           <RichText key={i} html={html} className="prose" />
         ))}
@@ -207,12 +246,12 @@ function TextBlock({ data }: { data: TextSection }) {
   )
 }
 
-function TextImageBlock({ data }: { data: TextImageSection }) {
+function TextImageBlock({ data, suppressTitle, headingLevel }: { data: TextImageSection; suppressTitle?: boolean; headingLevel?: 1 | 2 }) {
   return (
     <section className={`section section-split${data.reverse ? ' is-reverse' : ''}`}>
       <div className="container split">
         <div className="split-text">
-          <SectionTitle title={data.title} subtitle={data.subtitle} />
+          <SectionTitle title={data.title} subtitle={data.subtitle} suppressTitle={suppressTitle} headingLevel={headingLevel} />
           {data.paragraphs.map((html, i) => (
             <RichText key={i} html={html} className="prose" />
           ))}
@@ -676,11 +715,23 @@ function SitemapBlock({ ctx }: { ctx: RenderCtx }) {
 
 /* ---------------------------------------------------------------- dispatch */
 
-export function SectionView({ section, ctx }: { section: Section; ctx: RenderCtx }) {
+/** Per-section rendering hints the page routes derive from content — see `lib/page-heading.ts`. */
+export type SectionOpts = {
+  /** Render this hero's title as the page <h1> (exactly one section per page). */
+  heading?: boolean
+  /** Breadcrumb trail to place inside this hero's overlay. */
+  crumbs?: ReactNode
+  /** Hide this section's own <h2> because its text was promoted to the page <h1>. */
+  suppressTitle?: boolean
+  /** Render this section's own title as <h1> — for pages with no hero to host the heading. */
+  headingLevel?: 1 | 2
+}
+
+export function SectionView({ section, ctx, opts }: { section: Section; ctx: RenderCtx; opts?: SectionOpts }) {
   switch (section.type) {
-    case 'hero': return <HeroBlock data={section} />
-    case 'text': return <TextBlock data={section} />
-    case 'textImage': return <TextImageBlock data={section} />
+    case 'hero': return <HeroBlock data={section} heading={opts?.heading} crumbs={opts?.crumbs} />
+    case 'text': return <TextBlock data={section} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
+    case 'textImage': return <TextImageBlock data={section} suppressTitle={opts?.suppressTitle} headingLevel={opts?.headingLevel} />
     case 'columns': return <ColumnsBlock data={section} locale={ctx.locale} />
     case 'cards': return <CardsBlock data={section} />
     case 'reviews': return <ReviewsBlock data={section} locale={ctx.locale} />
@@ -697,11 +748,20 @@ export function SectionView({ section, ctx }: { section: Section; ctx: RenderCtx
   }
 }
 
-export function Sections({ sections, ctx }: { sections: Section[]; ctx: RenderCtx }) {
+export function Sections({
+  sections,
+  ctx,
+  opts,
+}: {
+  sections: Section[]
+  ctx: RenderCtx
+  /** Rendering hints keyed by section index. */
+  opts?: Record<number, SectionOpts>
+}) {
   return (
     <>
       {sections.map((s, i) => (
-        <SectionView key={`${s.type}-${i}`} section={s} ctx={ctx} />
+        <SectionView key={`${s.type}-${i}`} section={s} ctx={ctx} opts={opts?.[i]} />
       ))}
     </>
   )
