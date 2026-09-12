@@ -105,6 +105,28 @@ li { margin-bottom: 0.35em; }
 
 :focus-visible { outline: 2px solid var(--sage-deep); outline-offset: 3px; border-radius: 2px; }
 
+/* Skip-link: eerste focusbare element, visueel verborgen tot hij focus krijgt. Zonder deze link
+   tabt een toetsenbord- of schermlezergebruiker op ELKE pagina eerst door de hele navigatie,
+   de taalwisselaar en de boekknop voor hij bij de inhoud is. */
+.skiplink {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transform: translateY(-150%);
+  transition: transform 0.15s ease-out;
+}
+.skiplink:focus-visible { transform: translateY(0); outline-color: #fff; }
+/* Het <main>-element krijgt tabindex="-1" zodat de sprong focus kan plaatsen; dat mag geen zichtbare
+   ring opleveren als er alleen naartoe gesprongen wordt. */
+main:focus { outline: none; }
+
 .container { width: var(--shell); margin-inline: auto; }
 .container--narrow { width: var(--shell-narrow); }
 
