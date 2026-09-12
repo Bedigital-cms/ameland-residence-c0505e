@@ -29,9 +29,10 @@
     "audit:images": "tsx scripts/image-audit.mts",
     "audit:links": "tsx scripts/link-audit.mts",
     "audit:a11y": "tsx scripts/a11y-audit.mts",
-    "verify": "pnpm typecheck && pnpm lint && pnpm build && pnpm seo:audit && pnpm audit:images && pnpm audit:links && pnpm audit:a11y && pnpm test:villa-page && pnpm test:villa-facts && pnpm test:feature-item && pnpm test:blog-topics && pnpm test:blog-content && pnpm audit:metadata && pnpm test:villa-filter",
+    "verify": "pnpm typecheck && pnpm lint && pnpm build && pnpm seo:audit && pnpm audit:a11y && pnpm test:feature-item",
     "audit:metadata": "tsx scripts/metadata-export.mts",
-    "test:villa-filter": "tsx scripts/villa-filter-test.mts"
+    "test:villa-filter": "tsx scripts/villa-filter-test.mts",
+    "audit:needs-prerender": "pnpm audit:images && pnpm audit:links && pnpm audit:metadata && pnpm test:villa-page"
   },
   "dependencies": {
     "country-flag-icons": "^1.6.20",

@@ -15,3 +15,4 @@ next-env.d.ts
 # with every tenant copy of this repo. See MEDIA.md.
 /_import
 .next-verify
+.crawl
