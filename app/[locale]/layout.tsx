@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { Analytics } from '@/components/Analytics'
+import { CmsEditRuntime } from '@/components/CmsEditRuntime'
 import { getSite } from '@/content/site'
 import { activeLocales, canonicalOriginForLocale, defaultLocale, domainLocaleMode, hideDefaultPrefix, isActiveLocale } from '@/lib/i18n'
 import { localeDir } from '@/lib/locales'
@@ -83,6 +84,7 @@ export default async function LocaleLayout({
       </head>
       <body>
         <Analytics locale={locale} />
+        <CmsEditRuntime />
         {children}
       </body>
     </html>
