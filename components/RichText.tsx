@@ -1,5 +1,6 @@
 'use client'
 
+import type { CmsDomAttrs } from '@/lib/cmsEdit'
 import { localeHref } from '@/lib/href'
 
 import { useLocaleConfig } from './LocaleLink'
@@ -45,10 +46,10 @@ function toParagraphs(html: string): string {
     .join('')
 }
 
-export function RichText({ html, className }: { html: string; className?: string }) {
+export function RichText({ html, className, cms }: { html: string; className?: string; cms?: CmsDomAttrs }) {
   const { locale, defaultLocale, hideDefaultPrefix } = useLocaleConfig()
   const localised = toParagraphs(html).replace(/href="(\/[^"]*)"/g, (_m, url: string) => `href="${localeHref(locale, url, { defaultLocale, hideDefaultPrefix })}"`)
-  return <div className={className} dangerouslySetInnerHTML={{ __html: localised }} />
+  return <div className={className} dangerouslySetInnerHTML={{ __html: localised }} {...(cms ?? {})} />
 }
 
 /** Convenience: a list of paragraphs from content, each rendered through <RichText>. */

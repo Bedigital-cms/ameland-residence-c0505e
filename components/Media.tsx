@@ -10,9 +10,11 @@
  * `shape` picks the aspect-ratio/framing used by the surrounding section so the placeholder
  * occupies exactly the same space the real image will.
  */
-type Shape = 'card' | 'wide' | 'portrait' | 'square' | 'free'
+import type { CmsDomAttrs } from '@/lib/cmsEdit'
 
-const SHAPE_CLASS: Record<Shape, string> = {
+export type MediaShape = 'card' | 'wide' | 'portrait' | 'square' | 'free'
+
+const SHAPE_CLASS: Record<MediaShape, string> = {
   card: 'media-ph--card',
   wide: 'media-ph--wide',
   portrait: 'media-ph--portrait',
@@ -26,13 +28,16 @@ export function Media({
   shape = 'free',
   className = '',
   label = 'Afbeelding',
+  cms,
 }: {
   src?: string | null
   alt?: string
-  shape?: Shape
+  shape?: MediaShape
   className?: string
   /** Text shown inside the placeholder while no image is uploaded. */
   label?: string
+  /** Preview-only Visual Editor attrs; omit on the public site. */
+  cms?: CmsDomAttrs
 }) {
   const path = (src ?? '').trim()
 
@@ -42,6 +47,7 @@ export function Media({
         className={`media-ph ${SHAPE_CLASS[shape]} ${className}`.trim()}
         role="img"
         aria-label={alt || label}
+        {...(cms ?? {})}
       >
         <span className="media-ph-icon" aria-hidden="true">
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -57,6 +63,6 @@ export function Media({
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={path} alt={alt} className={className || undefined} />
+    <img src={path} alt={alt} className={className || undefined} {...(cms ?? {})} />
   )
 }

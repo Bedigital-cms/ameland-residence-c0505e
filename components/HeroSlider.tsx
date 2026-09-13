@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { cmsAttrs, cmsChild, type CmsNode } from '@/lib/cmsEdit'
+
 /**
  * Full-bleed hero slider. Cross-fades through the images every 6s (paused when the tab is hidden or
  * the visitor prefers reduced motion) and swaps to the mobile crop below 768px. A single image just
@@ -11,10 +13,13 @@ export function HeroSlider({
   images,
   mobileImages,
   alt,
+  cms,
 }: {
   images: string[]
   mobileImages: string[]
   alt: string
+  /** Pointer at the desktop `images` array (e.g. `/villa-zee/hero/images`). Mobile crop is not annotated. */
+  cms?: CmsNode
 }) {
   const [index, setIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
@@ -27,7 +32,9 @@ export function HeroSlider({
     return () => mq.removeEventListener('change', sync)
   }, [])
 
-  const slides = (isMobile && mobileImages.length ? mobileImages : images).filter(Boolean)
+  const usingMobile = isMobile && mobileImages.length > 0
+  const source = usingMobile ? mobileImages : images
+  const slides = source.map((src, orig) => ({ src, orig })).filter((s): s is { src: string; orig: number } => Boolean(s.src))
 
   useEffect(() => {
     if (slides.length < 2) return
@@ -43,7 +50,7 @@ export function HeroSlider({
 
   return (
     <div className="hero-slider">
-      {slides.map((src, i) => (
+      {slides.map(({ src, orig }, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           key={src + i}
@@ -53,6 +60,7 @@ export function HeroSlider({
           loading={i === 0 ? 'eager' : 'lazy'}
           // The first slide is the LCP element on most pages.
           fetchPriority={i === 0 ? 'high' : 'auto'}
+          {...(usingMobile ? {} : cmsAttrs(cmsChild(cms, orig), 'image') ?? {})}
         />
       ))}
       {slides.length > 1 && (
