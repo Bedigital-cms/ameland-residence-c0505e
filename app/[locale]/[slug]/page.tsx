@@ -122,5 +122,10 @@ export default async function Page({
   const page = getPage(locale, slug)
   if (!page) notFound()
   // The Zoek & boek page is addressed by `?range=`, so the query is part of what it renders.
-  return <Shell locale={locale}>{renderPage(page, await buildCtx(locale, await searchParams, 'pages.json'), slug)}</Shell>
+  const ctx = await buildCtx(locale, await searchParams, 'pages.json')
+  return (
+    <Shell locale={locale} editMode={ctx.editMode} cmsFile={ctx.cmsFile}>
+      {renderPage(page, ctx, slug)}
+    </Shell>
+  )
 }

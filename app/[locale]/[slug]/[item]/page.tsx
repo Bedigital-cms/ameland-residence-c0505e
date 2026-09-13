@@ -88,10 +88,22 @@ export default async function Page({
 
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return <Shell locale={locale}><VillaPage villa={villa} ctx={ctx} slug={item} /></Shell>
+    if (villa) {
+      return (
+        <Shell locale={locale} editMode={ctx.editMode} cmsFile={ctx.cmsFile}>
+          <VillaPage villa={villa} ctx={ctx} slug={item} />
+        </Shell>
+      )
+    }
   } else {
     const blog = getBlog(locale, item)
-    if (blog) return <Shell locale={locale}><BlogPage blog={blog} ctx={ctx} /></Shell>
+    if (blog) {
+      return (
+        <Shell locale={locale} editMode={ctx.editMode} cmsFile={ctx.cmsFile}>
+          <BlogPage blog={blog} ctx={ctx} />
+        </Shell>
+      )
+    }
   }
 
   notFound()

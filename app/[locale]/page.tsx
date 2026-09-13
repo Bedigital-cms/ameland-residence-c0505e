@@ -23,9 +23,10 @@ export default async function HomePage({
 }) {
   const { locale } = await params
   const home = getHome(locale)
+  const ctx = await buildCtx(locale, await searchParams, 'home.json')
   return (
-    <Shell locale={locale}>
-      <Sections sections={home.sections} ctx={await buildCtx(locale, await searchParams, 'home.json')} />
+    <Shell locale={locale} editMode={ctx.editMode} cmsFile={ctx.cmsFile}>
+      <Sections sections={home.sections} ctx={ctx} />
     </Shell>
   )
 }
