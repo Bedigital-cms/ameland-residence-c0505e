@@ -28,6 +28,11 @@ import { PHASE_DEVELOPMENT_SERVER } from 'next/constants'
  * Every case resolves in ONE hop. Single-language sites keep the plain flat rule.
  */
 type RedirectRule = { source: string; destination: string; permanent: boolean }
+/** What Next's `redirects()` consumes. We emit an explicit `statusCode` so permanent rules are true
+ *  301s (not Next's default 308) — matching the locale proxy's own 301 canonicalisation and the
+ *  "301/permanent" contract for the WordPress → new-site migration. */
+type NextRedirect = { source: string; destination: string; statusCode: number }
+const asStatus = (permanent: boolean): number => (permanent ? 301 : 302)
 function loadRedirects(): RedirectRule[] {
   try {
     const raw = JSON.parse(readFileSync(path.join(process.cwd(), 'content', 'redirects.json'), 'utf8'))
@@ -41,7 +46,13 @@ function loadRedirects(): RedirectRule[] {
   }
 }
 
-type I18nInfo = { enabled: boolean; defaultLocale: string; locales: string[]; hideDefaultPrefix: boolean }
+type I18nInfo = {
+  enabled: boolean
+  defaultLocale: string
+  locales: string[]
+  hideDefaultPrefix: boolean
+  domainLocalesEnabled: boolean
+}
 /** i18n config for redirect building. `enabled` = multi-language actually on (>1 active locale). */
 function i18nInfo(): I18nInfo {
   try {
@@ -49,9 +60,15 @@ function i18nInfo(): I18nInfo {
     const locales: string[] = Array.isArray(cfg?.locales) ? cfg.locales.filter((l: unknown): l is string => typeof l === 'string') : []
     const defaultLocale = typeof cfg?.defaultLocale === 'string' ? cfg.defaultLocale : 'nl'
     const enabled = cfg?.enabled === true && locales.length > 1
-    return { enabled, defaultLocale, locales, hideDefaultPrefix: cfg?.hideDefaultPrefix === true }
+    return {
+      enabled,
+      defaultLocale,
+      locales,
+      hideDefaultPrefix: cfg?.hideDefaultPrefix === true,
+      domainLocalesEnabled: cfg?.domainLocalesEnabled === true,
+    }
   } catch {
-    return { enabled: false, defaultLocale: 'nl', locales: [], hideDefaultPrefix: false }
+    return { enabled: false, defaultLocale: 'nl', locales: [], hideDefaultPrefix: false, domainLocalesEnabled: false }
   }
 }
 
@@ -66,27 +83,33 @@ function withLocale(dest: string, locale: string): string {
 const prefixPath = (locale: string, p: string): string => (p === '/' ? `/${locale}` : `/${locale}${p}`)
 
 /** Expand authored (prefix-free) rules into concrete per-locale + bare Next redirect rules. */
-function buildRedirects(): RedirectRule[] {
+function buildRedirects(): NextRedirect[] {
   const rules = loadRedirects()
-  const { enabled, defaultLocale, locales, hideDefaultPrefix } = i18nInfo()
-  const out: RedirectRule[] = []
+  const { enabled, defaultLocale, locales, hideDefaultPrefix, domainLocalesEnabled } = i18nInfo()
+  // On the production domains the default language is served prefix-free — either via `hideDefaultPrefix`
+  // (clean-URL mode) OR via per-domain locale (`domainLocalesEnabled`: .nl serves nl, .de serves de, both
+  // without a prefix). In both cases the bare old URL must land DIRECTLY on the prefix-free new URL, or the
+  // locale proxy would strip a `/<default>` prefix in a SECOND hop (`/old`→`/nl/new`→`/new`).
+  const bareDefaultIsClean = hideDefaultPrefix || domainLocalesEnabled
+  const out: NextRedirect[] = []
   for (const r of rules) {
-    const permanent = r.permanent !== false
+    const statusCode = asStatus(r.permanent !== false)
     if (!enabled) {
-      out.push({ source: r.source, destination: r.destination, permanent }) // single-language: flat
+      out.push({ source: r.source, destination: r.destination, statusCode }) // single-language: flat
       continue
     }
-    // A prefixed old URL in each active language → the same-language new URL. In clean-URL mode the
-    // default language targets the unprefixed new path (so it doesn't get a second, strip-prefix redirect).
+    // A prefixed old URL in each active language → the same-language new URL (preview/staging hosts serve
+    // languages under `/nl` and `/de`). In clean-URL mode the default language targets the unprefixed new
+    // path (so it doesn't get a second, strip-prefix redirect).
     for (const loc of locales) {
       const dest = loc === defaultLocale && hideDefaultPrefix ? r.destination : withLocale(r.destination, loc)
-      out.push({ source: prefixPath(loc, r.source), destination: dest, permanent })
+      out.push({ source: prefixPath(loc, r.source), destination: dest, statusCode })
     }
-    // The bare (unprefixed) old URL → the default language's new URL.
+    // The bare (unprefixed) old URL → the default language's new URL (prefix-free on the production domains).
     out.push({
       source: r.source,
-      destination: hideDefaultPrefix ? r.destination : withLocale(r.destination, defaultLocale),
-      permanent,
+      destination: bareDefaultIsClean ? r.destination : withLocale(r.destination, defaultLocale),
+      statusCode,
     })
   }
   return out

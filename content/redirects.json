@@ -1,4 +1,15 @@
 {
-  "$comment": "URL-omleidingen (301). LEEG EN DAT IS DE BEDOELING: dit template gebruikt exact dezelfde URL-structuur als de vorige site — villa's genest onder de villa-hub (/villa-s/villa-zee, .de: /ferienhauser/villa-zee) en artikelen onder /blogs/<slug>, alle overige pagina's vlak (/contact, /over-ons, /zoek-boek). Alle 89 NL- en 51 DE-URL's uit de oude sitemaps blijven dus 200 en hebben geen omleiding nodig; een redirect zou hier juist een extra hop en verlies van linkwaarde betekenen. Voeg alleen een regel toe als een URL ECHT verandert (of als er een oude URL opduikt die niet in de sitemap stond). Regels zijn vlak en zonder taalprefix — next.config.ts leest dit bestand en zet ze om naar één 301-hop per taal. Beheer via de CMS Redirects-editor of de AI-agent.",
-  "redirects": []
+  "$comment": "URL-omleidingen (301), afgeleid uit de oude WordPress-sitemaps (www.ameland-residence.nl/sitemap.xml + .de/sitemap.xml, gecrawld 2026-09-13). De nieuwe site gebruikt bewust EXACT dezelfde URL-structuur als de oude site — villa's genest onder de villa-hub (/villa-s/villa-zee, .de: /ferienhauser/villa-zee), artikelen onder /blogs/<slug>, alle overige pagina's vlak (/contact, /over-ons, /zoek-boek). Daardoor blijven 82/84 NL- en 51/51 DE-URL's ongewijzigd (200) en hebben ze GEEN omleiding nodig; een redirect zou daar juist een extra hop en verlies van linkwaarde zijn. Alleen twee oude NL-blogartikelen bestaan niet meer in de nieuwe content en krijgen een 301 naar de blog-hub (/blogs) — zelfde taal, zelfde rubriek, één hop, geen homepage-redirect. DE is volledig gedekt. Regels zijn vlak en zonder taalprefix; next.config.ts leest dit bestand en zet ze in domein-taalmodus om naar één 301-hop naar de prefix-vrije productie-URL per domein. Query strings blijven behouden. Beheer via de CMS Redirects-editor of de AI-agent.",
+  "redirects": [
+    {
+      "source": "/blogs/een-luxe-vakantiehuis-op-de-waddeneilanden-daarom-kiezen-voor-ameland",
+      "destination": "/blogs",
+      "permanent": true
+    },
+    {
+      "source": "/blogs/vakantie-op-ameland-met-kinderen-zo-heeft-iedereen-vakantiev",
+      "destination": "/blogs",
+      "permanent": true
+    }
+  ]
 }
