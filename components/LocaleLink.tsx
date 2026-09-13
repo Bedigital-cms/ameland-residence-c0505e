@@ -13,13 +13,20 @@ import { localeHref, isInternalPath } from '@/lib/href'
  * Content JSON keeps URLs prefix-free ("/behandelingen"); the prefix is applied only at render.
  */
 /** Locale plus the routing config links need (default locale + whether its prefix is hidden). */
-type LocaleCtx = { locale: string; defaultLocale: string; hideDefaultPrefix: boolean }
-const LocaleContext = createContext<LocaleCtx>({ locale: 'nl', defaultLocale: 'nl', hideDefaultPrefix: false })
+type LocaleCtx = {
+  locale: string
+  defaultLocale: string
+  hideDefaultPrefix: boolean
+  /** In per-domain mode: locale → canonical domain origin, so the switcher jumps across domains. */
+  domainOrigins: Record<string, string>
+}
+const LocaleContext = createContext<LocaleCtx>({ locale: 'nl', defaultLocale: 'nl', hideDefaultPrefix: false, domainOrigins: {} })
 
 export function LocaleProvider({
   locale,
   defaultLocale,
   hideDefaultPrefix = false,
+  domainOrigins = {},
   children,
 }: {
   locale: string
@@ -27,10 +34,12 @@ export function LocaleProvider({
   defaultLocale?: string
   /** Whether the default locale is served without its /<locale> prefix (from lib/i18n). */
   hideDefaultPrefix?: boolean
+  /** Per-domain mode: locale → canonical domain origin (for cross-domain language switching). */
+  domainOrigins?: Record<string, string>
   children: ReactNode
 }) {
   return (
-    <LocaleContext.Provider value={{ locale, defaultLocale: defaultLocale ?? locale, hideDefaultPrefix }}>
+    <LocaleContext.Provider value={{ locale, defaultLocale: defaultLocale ?? locale, hideDefaultPrefix, domainOrigins }}>
       {children}
     </LocaleContext.Provider>
   )
