@@ -5,6 +5,7 @@ import { Sections, type RenderCtx } from '@/components/sections'
 import { Shell } from '@/components/Shell'
 import { buildCtx, type SearchParams } from '@/content/ctx'
 import { getPage, getPageSlugs } from '@/content/pages'
+import { cmsPointer } from '@/lib/cmsEdit'
 import { activeLocales } from '@/lib/i18n'
 import { metadataFrom } from '@/lib/seo'
 import type { PageContent, Section, TextSection } from '@/lib/types'
@@ -48,26 +49,32 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
  * Render a `pages.json` entry according to its `kind`. Most kinds only ADD a section to whatever the
  * page already has — the contact page gets the form, the sitemap page gets the generated index —
  * so the editable content stays in charge of the rest of the layout.
+ *
+ * Each original section keeps its JSON Pointer (`/<slug>/sections/<i>`) even when the render list is
+ * mutated, so Visual Editor annotations still address the real source file.
  */
-function renderPage(page: PageContent, ctx: RenderCtx) {
-  const sections: Section[] = [...page.sections]
-  const has = (type: Section['type']) => sections.some((s) => s.type === type)
+function renderPage(page: PageContent, ctx: RenderCtx, slug: string) {
+  const located: { section: Section; pointer: string | null }[] = page.sections.map((section, i) => ({
+    section,
+    pointer: cmsPointer(slug, 'sections', i),
+  }))
+  const has = (type: Section['type']) => located.some((l) => l.section.type === type)
 
   switch (page.kind) {
     case 'villas-hub':
-      if (!has('collection')) sections.push({ type: 'collection', source: 'villas', title: page.title, linkLabel: '' })
+      if (!has('collection')) located.push({ section: { type: 'collection', source: 'villas', title: page.title, linkLabel: '' }, pointer: null })
       break
     case 'blogs-hub':
-      if (!has('collection')) sections.push({ type: 'collection', source: 'blogs', title: page.title, linkLabel: '' })
+      if (!has('collection')) located.push({ section: { type: 'collection', source: 'blogs', title: page.title, linkLabel: '' }, pointer: null })
       break
     case 'booking': {
       // The results block carries the search controls in its own sidebar, so the page's plain
       // `booking` section is replaced rather than kept — otherwise the same period and party
       // dropdowns would appear twice, once above the results and once beside them.
       if (has('searchResults')) break
-      const at = sections.findIndex((s) => s.type === 'booking')
-      if (at === -1) sections.push({ type: 'searchResults' })
-      else sections.splice(at, 1, { type: 'searchResults' })
+      const at = located.findIndex((l) => l.section.type === 'booking')
+      if (at === -1) located.push({ section: { type: 'searchResults' }, pointer: null })
+      else located.splice(at, 1, { section: { type: 'searchResults' }, pointer: null })
       break
     }
     case 'lastminutes': {
@@ -75,27 +82,33 @@ function renderPage(page: PageContent, ctx: RenderCtx) {
       // The overview carries its own period filter AND the villa results, so it takes the place of
       // the plain search widget the page's JSON asks for — two calendars on one page would only
       // compete. Without such a section it simply goes at the end.
-      const at = sections.findIndex((s) => s.type === 'booking')
-      if (at === -1) sections.push({ type: 'lastminutes' })
-      else sections.splice(at, 1, { type: 'lastminutes' })
+      const at = located.findIndex((l) => l.section.type === 'booking')
+      if (at === -1) located.push({ section: { type: 'lastminutes' }, pointer: null })
+      else located.splice(at, 1, { section: { type: 'lastminutes' }, pointer: null })
       break
     }
     case 'contact': {
       if (has('form')) break
       // Move the page's own contact copy into the form's info column rather than appending a
       // second block — otherwise the address is printed twice, once by each.
-      const lastText = sections.map((s, i) => [s, i] as const).reverse().find(([s]) => s.type === 'text')
-      const intro = lastText ? (sections.splice(lastText[1], 1)[0] as TextSection) : undefined
-      sections.push({ type: 'form', slug: 'contact', intro })
+      const lastTextAt = located.map((l, i) => [l, i] as const).reverse().find(([l]) => l.section.type === 'text')
+      const intro = lastTextAt ? (located.splice(lastTextAt[1], 1)[0] as { section: TextSection; pointer: string | null }) : undefined
+      located.push({ section: { type: 'form', slug: 'contact', intro: intro?.section }, pointer: intro?.pointer ?? null })
       break
     }
     case 'sitemap':
-      if (!has('sitemap')) sections.push({ type: 'sitemap' })
+      if (!has('sitemap')) located.push({ section: { type: 'sitemap' }, pointer: null })
       break
     default:
       break
   }
-  return <Sections sections={sections} ctx={ctx} />
+  return (
+    <Sections
+      sections={located.map((l) => l.section)}
+      pointers={located.map((l) => l.pointer)}
+      ctx={ctx}
+    />
+  )
 }
 
 export default async function Page({
@@ -109,5 +122,5 @@ export default async function Page({
   const page = getPage(locale, slug)
   if (!page) notFound()
   // The Zoek & boek page is addressed by `?range=`, so the query is part of what it renders.
-  return <Shell locale={locale}>{renderPage(page, await buildCtx(locale, await searchParams))}</Shell>
+  return <Shell locale={locale}>{renderPage(page, await buildCtx(locale, await searchParams, 'pages.json'), slug)}</Shell>
 }

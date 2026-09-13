@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { cmsAttrs, cmsChild, type CmsNode } from '@/lib/cmsEdit'
+
 import { Icon } from './icons'
 import { useLocale } from './LocaleLink'
 
@@ -40,11 +42,12 @@ const PREVIEW_TILES = 5
 /** Onder deze afstand is een veeg eerder een tik dan een bladerbeweging. */
 const SWIPE_PX = 40
 
-export function Gallery({ images, alt, preview = false }: { images: string[]; alt: string; preview?: boolean }) {
+export function Gallery({ images, alt, preview = false, cms }: { images: string[]; alt: string; preview?: boolean; cms?: CmsNode }) {
   const [open, setOpen] = useState<number | null>(null)
   const locale = useLocale()
   const labels = LABELS[locale] || LABELS.nl
-  const shots = (images || []).filter(Boolean)
+  const indexed = (images || []).map((src, orig) => ({ src, orig })).filter((s): s is { src: string; orig: number } => Boolean(s.src))
+  const shots = indexed.map((s) => s.src)
   const strip = useRef<HTMLDivElement>(null)
   const touchX = useRef<number | null>(null)
 
@@ -85,7 +88,7 @@ export function Gallery({ images, alt, preview = false }: { images: string[]; al
         {tiles.map((src, i) => (
           <button key={src + i} type="button" className="gallery-tile" onClick={() => setOpen(i)} aria-label={`${alt} — ${labels.photo(i + 1)}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" loading={preview && i === 0 ? 'eager' : 'lazy'} />
+            <img src={src} alt="" loading={preview && i === 0 ? 'eager' : 'lazy'} {...(cmsAttrs(cmsChild(cms, indexed[i].orig), 'image') ?? {})} />
             {/* Op de laatste tegel het aantal resterende foto's — dezelfde ingang als de knop
                 eronder, maar op de plek waar de bezoeker al kijkt. */}
             {preview && hidden > 0 && i === tiles.length - 1 && <span className="gallery-tile-more">+{hidden}</span>}

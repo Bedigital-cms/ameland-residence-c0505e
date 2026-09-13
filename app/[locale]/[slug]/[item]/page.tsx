@@ -84,11 +84,11 @@ export default async function Page({
   if (!source) notFound() // a two-segment URL whose first segment isn't a hub
   // A villa reached from Zoek & boek carries the search in its query, so its booking calendar can
   // open on the period and party the guest already chose.
-  const ctx = await buildCtx(locale, await searchParams)
+  const ctx = await buildCtx(locale, await searchParams, source === 'villas' ? 'villas.json' : 'blogs.json')
 
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return <Shell locale={locale}><VillaPage villa={villa} ctx={ctx} /></Shell>
+    if (villa) return <Shell locale={locale}><VillaPage villa={villa} ctx={ctx} slug={item} /></Shell>
   } else {
     const blog = getBlog(locale, item)
     if (blog) return <Shell locale={locale}><BlogPage blog={blog} ctx={ctx} /></Shell>

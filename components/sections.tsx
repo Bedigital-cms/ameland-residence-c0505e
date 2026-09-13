@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 
 import type { Availability, DateRange } from '@/lib/availability'
 import { toDutchDate } from '@/lib/availability'
+import { cmsAttrs, cmsChild, cmsJoin, cmsPointer, type CmsNode } from '@/lib/cmsEdit'
 import type {
   BannersSection,
   BlogCollection,
@@ -23,6 +24,7 @@ import type {
   VillaContent,
 } from '@/lib/types'
 
+import { Editable } from './Editable'
 import Form, { type FormDef } from './Form'
 import { AlbumSlider } from './AlbumSlider'
 import { BookingSearch } from './BookingSearch'
@@ -70,24 +72,32 @@ export type RenderCtx = {
   searchRange: DateRange | null
   /** Party size from `?personen=`; 0 when not filtered on. */
   searchPersons: number
+  /** True only for this request when the URL has `?cms-edit=1`. Never from env. */
+  editMode: boolean
+  /** Content file the current page is sourced from (`home.json`, `pages.json`, `villas.json`). */
+  cmsFile: string
 }
 
 /* ------------------------------------------------------------------ pieces */
 
-export function SectionTitle({ title, subtitle }: { title?: string; subtitle?: string }) {
+export function SectionTitle({ title, subtitle, cms }: { title?: string; subtitle?: string; cms?: CmsNode }) {
   if (!title && !subtitle) return null
   return (
     <header className="section-head">
-      {title && <h2>{title}</h2>}
-      {subtitle && <p className="section-sub">{subtitle}</p>}
+      {title && (
+        <Editable as="h2" type="text" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'title')} editMode={!!cms?.editMode}>{title}</Editable>
+      )}
+      {subtitle && (
+        <Editable as="p" type="text" className="section-sub" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'subtitle')} editMode={!!cms?.editMode}>{subtitle}</Editable>
+      )}
     </header>
   )
 }
 
-function Cta({ label, url, variant = 'primary' }: { label?: string; url?: string; variant?: 'primary' | 'light' | 'ghost' }) {
+function Cta({ label, url, variant = 'primary', cms }: { label?: string; url?: string; variant?: 'primary' | 'light' | 'ghost'; cms?: CmsNode }) {
   if (!label || !url) return null
   return (
-    <LocaleLink className={`btn btn-${variant}`} href={url}>
+    <LocaleLink className={`btn btn-${variant}`} href={url} {...(cmsAttrs(cms, 'text') ?? {})}>
       {label}
       <Icon name="arrow" size={16} />
     </LocaleLink>
@@ -164,7 +174,7 @@ function CardMarquee({ items, variant }: { items: Card[]; variant: CardVariant }
 
 /* ---------------------------------------------------------------- sections */
 
-function HeroBlock({ data }: { data: HeroSection }) {
+function HeroBlock({ data, cms, imageCms }: { data: HeroSection; cms?: CmsNode; imageCms?: CmsNode }) {
   const hasMedia = !!(data.video || data.images.length || data.mobileImages.length)
   if (!hasMedia && !data.title) return null
   return (
@@ -174,7 +184,7 @@ function HeroBlock({ data }: { data: HeroSection }) {
           <source src={data.video} type="video/mp4" />
         </video>
       ) : (
-        <HeroSlider images={data.images} mobileImages={data.mobileImages} alt={data.title || 'Ameland Residence'} />
+        <HeroSlider images={data.images} mobileImages={data.mobileImages} alt={data.title || 'Ameland Residence'} cms={imageCms} />
       )}
       {(data.title || data.subtitle || data.ctaLabel) && (
         <div className={`hero-overlay${data.align === 'center' ? ' hero-overlay--center' : ''}`}>
@@ -182,7 +192,7 @@ function HeroBlock({ data }: { data: HeroSection }) {
             {data.title && <p className="hero-title">{data.title}</p>}
             {data.subtitle && <p className="hero-sub">{data.subtitle}</p>}
             {/* `.hero-overlay .btn` geeft de knop hier zijn eigen doorschijnende stijl. */}
-            <Cta label={data.ctaLabel} url={data.ctaUrl} />
+            <Cta label={data.ctaLabel} url={data.ctaUrl} cms={cmsChild(cms, 'ctaLabel')} />
           </div>
         </div>
       )}
@@ -190,33 +200,33 @@ function HeroBlock({ data }: { data: HeroSection }) {
   )
 }
 
-function TextBlock({ data }: { data: TextSection }) {
+function TextBlock({ data, cms }: { data: TextSection; cms?: CmsNode }) {
   // Some pages carry a text section with every field blank (a placeholder the CMS left behind).
   // Rendering it would add an empty band of section padding above the real content.
   if (!data.title && !data.subtitle && !data.paragraphs.length && !data.ctaLabel) return null
   return (
     <section className="section section-text">
       <div className="container container--narrow">
-        <SectionTitle title={data.title} subtitle={data.subtitle} />
+        <SectionTitle title={data.title} subtitle={data.subtitle} cms={cms} />
         {data.paragraphs.map((html, i) => (
           <RichText key={i} html={html} className="prose" />
         ))}
-        <Cta label={data.ctaLabel} url={data.ctaUrl} />
+        <Cta label={data.ctaLabel} url={data.ctaUrl} cms={cmsChild(cms, 'ctaLabel')} />
       </div>
     </section>
   )
 }
 
-function TextImageBlock({ data }: { data: TextImageSection }) {
+function TextImageBlock({ data, cms }: { data: TextImageSection; cms?: CmsNode }) {
   return (
     <section className={`section section-split${data.reverse ? ' is-reverse' : ''}`}>
       <div className="container split">
         <div className="split-text">
-          <SectionTitle title={data.title} subtitle={data.subtitle} />
+          <SectionTitle title={data.title} subtitle={data.subtitle} cms={cms} />
           {data.paragraphs.map((html, i) => (
             <RichText key={i} html={html} className="prose" />
           ))}
-          <Cta label={data.ctaLabel} url={data.ctaUrl} />
+          <Cta label={data.ctaLabel} url={data.ctaUrl} cms={cmsChild(cms, 'ctaLabel')} />
         </div>
         <div className="split-media">
           <Media src={data.image} alt={data.title} shape="portrait" label="Foto" />
@@ -226,7 +236,7 @@ function TextImageBlock({ data }: { data: TextImageSection }) {
   )
 }
 
-function ColumnBlockView({ block, locale }: { block: ColumnBlock; locale: string }) {
+function ColumnBlockView({ block, locale, cms }: { block: ColumnBlock; locale: string; cms?: CmsNode }) {
   if (block.kind === 'text') {
     return (
       <div className="col-text">
@@ -235,7 +245,7 @@ function ColumnBlockView({ block, locale }: { block: ColumnBlock; locale: string
         {block.paragraphs.map((html, i) => (
           <RichText key={i} html={html} className="prose" />
         ))}
-        <Cta label={block.ctaLabel} url={block.ctaUrl} variant="light" />
+        <Cta label={block.ctaLabel} url={block.ctaUrl} variant="light" cms={cmsChild(cms, 'ctaLabel')} />
       </div>
     )
   }
@@ -297,13 +307,13 @@ function ColumnBlockView({ block, locale }: { block: ColumnBlock; locale: string
   return (
     <div className="col-group">
       {block.blocks.map((b, i) => (
-        <ColumnBlockView key={i} block={b} locale={locale} />
+        <ColumnBlockView key={i} block={b} locale={locale} cms={cmsChild(cms, 'blocks', i)} />
       ))}
     </div>
   )
 }
 
-function ColumnsBlock({ data, locale }: { data: ColumnsSection; locale: string }) {
+function ColumnsBlock({ data, locale, cms }: { data: ColumnsSection; locale: string; cms?: CmsNode }) {
   // Tekst + USP-lijst ernaast is op de bestaande site 70/30, niet half-half — dat leest een stuk
   // beter, want de lijst is smal en de lopende tekst niet.
   const textWithList = data.columns.length === 2 && data.columns[0].kind === 'text' && data.columns[1].kind === 'list'
@@ -349,7 +359,7 @@ function ColumnsBlock({ data, locale }: { data: ColumnsSection; locale: string }
       <div className={grid} style={gridStyle}>
         {data.columns.map((block, i) => (
           <div className="col" key={i}>
-            <ColumnBlockView block={block} locale={locale} />
+            <ColumnBlockView block={block} locale={locale} cms={cmsChild(cms, 'columns', i)} />
           </div>
         ))}
       </div>
@@ -365,12 +375,12 @@ const REVIEW_LABELS: Record<string, { more: string; less: string }> = {
 
 /** Beoordelingen uit de content, in een raster dat van vier naar één kolom zakt. Geen horizontale
  *  scrollbalk dus, ook niet met meer dan vier reviews — die schuiven simpelweg naar de volgende rij. */
-function ReviewsBlock({ data, locale }: { data: ReviewsSection; locale: string }) {
+function ReviewsBlock({ data, locale, cms }: { data: ReviewsSection; locale: string; cms?: CmsNode }) {
   const labels = REVIEW_LABELS[locale] || REVIEW_LABELS.nl
   return (
     <section className="section section-reviews">
       <div className="container">
-        <SectionTitle title={data.title} subtitle={data.subtitle} />
+        <SectionTitle title={data.title} subtitle={data.subtitle} cms={cms} />
         {data.items.length > 0 && (
           <div className="reviewgrid">
             {data.items.map((review, i) => (
@@ -378,17 +388,17 @@ function ReviewsBlock({ data, locale }: { data: ReviewsSection; locale: string }
             ))}
           </div>
         )}
-        <Cta label={data.ctaLabel} url={data.ctaUrl} variant="light" />
+        <Cta label={data.ctaLabel} url={data.ctaUrl} variant="light" cms={cmsChild(cms, 'ctaLabel')} />
       </div>
     </section>
   )
 }
 
-function CardsBlock({ data }: { data: CardsSection }) {
+function CardsBlock({ data, cms }: { data: CardsSection; cms?: CmsNode }) {
   return (
     <section className="section section-cards">
       <div className="container">
-        <SectionTitle title={data.title} />
+        <SectionTitle title={data.title} cms={cms} />
         {/* Deze banners staan er op de bestaande site met het labelblok in de foto, net als de
             villakaarten — titel op het beeld, alleen de link eronder. */}
         <CardGrid items={data.items} columns={Math.min(data.items.length, 3)} variant="overlay" />
@@ -405,7 +415,7 @@ function CardsBlock({ data }: { data: CardsSection }) {
  * Met minder dan twee foto's valt hij terug op een stilstaande rij: dupliceren en animeren van één
  * beeld levert alleen een zichtbare sprong op.
  */
-function BannersBlock({ data }: { data: BannersSection }) {
+function BannersBlock({ data, cms }: { data: BannersSection; cms?: CmsNode }) {
   const strip = data.items.map((b, i) => (
     <Media key={b.image + i} src={b.image} alt="" shape="portrait" label="Sfeerbeeld" />
   ))
@@ -413,7 +423,7 @@ function BannersBlock({ data }: { data: BannersSection }) {
 
   return (
     <section className="section section-banners">
-      <SectionTitle title={data.title} />
+      <SectionTitle title={data.title} cms={cms} />
       {animate ? (
         <div
           className="bannerstrip marquee"
@@ -435,7 +445,7 @@ function BannersBlock({ data }: { data: BannersSection }) {
 
 /** Villa/blog cards straight from the collection file — new key in JSON, new card here. Detail URLs
  *  are nested under the hub (`ctx.villaBase`/`ctx.blogBase`), which differs per language. */
-function CollectionBlock({ source, title, linkLabel, marquee, ctx }: { source: 'villas' | 'blogs'; title: string; linkLabel: string; marquee?: boolean; ctx: RenderCtx }) {
+function CollectionBlock({ source, title, linkLabel, marquee, ctx, cms }: { source: 'villas' | 'blogs'; title: string; linkLabel: string; marquee?: boolean; ctx: RenderCtx; cms?: CmsNode }) {
   const items: Card[] =
     source === 'villas'
       ? Object.entries(ctx.villas).map(([slug, v]) => ({
@@ -462,7 +472,7 @@ function CollectionBlock({ source, title, linkLabel, marquee, ctx }: { source: '
     <section className="section section-cards">
       {title && (
         <div className="container">
-          <SectionTitle title={title} />
+          <SectionTitle title={title} cms={cms} />
         </div>
       )}
       {/* De band loopt van rand tot rand, zodat de volgende kaart aangesneden in beeld staat. */}
@@ -479,11 +489,11 @@ function CollectionBlock({ source, title, linkLabel, marquee, ctx }: { source: '
  * `preview` hoort bij de villapagina's: die dragen 25-30 foto's, en die allemaal onder elkaar
  * tonen rekt de pagina eindeloos op. Losse pagina's met een handvol foto's houden de tegelgrid.
  */
-function GalleryBlock({ data, preview = false }: { data: GallerySection; preview?: boolean }) {
+function GalleryBlock({ data, preview = false, cms }: { data: GallerySection; preview?: boolean; cms?: CmsNode }) {
   return (
     <section className="section section-gallery">
       <div className="container">
-        <Gallery images={data.images} alt="Foto" preview={preview} />
+        <Gallery images={data.images} alt="Foto" preview={preview} cms={cms} />
       </div>
     </section>
   )
@@ -595,7 +605,7 @@ function SearchResultsBlock({ ctx }: { ctx: RenderCtx }) {
   )
 }
 
-function FormBlock({ slug, intro, ctx }: { slug: string; intro?: TextSection; ctx: RenderCtx }) {
+function FormBlock({ slug, intro, ctx, cms }: { slug: string; intro?: TextSection; ctx: RenderCtx; cms?: CmsNode }) {
   const f = ctx.site.footer
   return (
     <section className="section section-contact" id="contact">
@@ -605,7 +615,7 @@ function FormBlock({ slug, intro, ctx }: { slug: string; intro?: TextSection; ct
               Printing both would repeat the same address twice on the page. */}
           {intro ? (
             <>
-              <SectionTitle title={intro.title} subtitle={intro.subtitle} />
+              <SectionTitle title={intro.title} subtitle={intro.subtitle} cms={cms} />
               {intro.paragraphs.map((html, i) => (
                 <RichText key={i} html={html} className="prose" />
               ))}
@@ -676,20 +686,20 @@ function SitemapBlock({ ctx }: { ctx: RenderCtx }) {
 
 /* ---------------------------------------------------------------- dispatch */
 
-export function SectionView({ section, ctx }: { section: Section; ctx: RenderCtx }) {
+export function SectionView({ section, ctx, cms }: { section: Section; ctx: RenderCtx; cms?: CmsNode }) {
   switch (section.type) {
-    case 'hero': return <HeroBlock data={section} />
-    case 'text': return <TextBlock data={section} />
-    case 'textImage': return <TextImageBlock data={section} />
-    case 'columns': return <ColumnsBlock data={section} locale={ctx.locale} />
-    case 'cards': return <CardsBlock data={section} />
-    case 'reviews': return <ReviewsBlock data={section} locale={ctx.locale} />
-    case 'banners': return <BannersBlock data={section} />
-    case 'collection': return <CollectionBlock source={section.source} title={section.title} linkLabel={section.linkLabel} marquee={section.marquee} ctx={ctx} />
+    case 'hero': return <HeroBlock data={section} cms={cms} />
+    case 'text': return <TextBlock data={section} cms={cms} />
+    case 'textImage': return <TextImageBlock data={section} cms={cms} />
+    case 'columns': return <ColumnsBlock data={section} locale={ctx.locale} cms={cms} />
+    case 'cards': return <CardsBlock data={section} cms={cms} />
+    case 'reviews': return <ReviewsBlock data={section} locale={ctx.locale} cms={cms} />
+    case 'banners': return <BannersBlock data={section} cms={cms} />
+    case 'collection': return <CollectionBlock source={section.source} title={section.title} linkLabel={section.linkLabel} marquee={section.marquee} ctx={ctx} cms={cms} />
     case 'gallery': return <GalleryBlock data={section} />
     case 'features': return <FeaturesBlock data={section} />
     case 'booking': return <BookingBlock widget={section.widget} accommodationId={section.accommodationId} ctx={ctx} />
-    case 'form': return <FormBlock slug={section.slug} intro={section.intro} ctx={ctx} />
+    case 'form': return <FormBlock slug={section.slug} intro={section.intro} ctx={ctx} cms={cms} />
     case 'sitemap': return <SitemapBlock ctx={ctx} />
     case 'lastminutes': return <LastMinutesBlock ctx={ctx} />
     case 'searchResults': return <SearchResultsBlock ctx={ctx} />
@@ -697,12 +707,36 @@ export function SectionView({ section, ctx }: { section: Section; ctx: RenderCtx
   }
 }
 
-export function Sections({ sections, ctx }: { sections: Section[]; ctx: RenderCtx }) {
+export function Sections({
+  sections,
+  ctx,
+  cmsBase,
+  cmsKey = 'sections',
+  pointers,
+}: {
+  sections: Section[]
+  ctx: RenderCtx
+  /** JSON Pointer to the parent object that owns this list. Empty string = file root (home.json). */
+  cmsBase?: string
+  /** Key of this list on the parent (`sections` or `extraSections`). */
+  cmsKey?: string
+  /** Explicit per-section pointers (same length as `sections`). Used when the render list was mutated. */
+  pointers?: Array<string | null>
+}) {
   return (
     <>
-      {sections.map((s, i) => (
-        <SectionView key={`${s.type}-${i}`} section={s} ctx={ctx} />
-      ))}
+      {sections.map((s, i) => {
+        const pointer = pointers
+          ? pointers[i]
+          : ctx.cmsFile
+            ? cmsJoin(cmsBase ?? '', cmsKey, i)
+            : null
+        const cms: CmsNode | undefined =
+          pointer && ctx.cmsFile
+            ? { file: ctx.cmsFile, locale: ctx.locale, pointer, editMode: ctx.editMode }
+            : undefined
+        return <SectionView key={`${s.type}-${i}`} section={s} ctx={ctx} cms={cms} />
+      })}
     </>
   )
 }
@@ -710,18 +744,24 @@ export function Sections({ sections, ctx }: { sections: Section[]; ctx: RenderCt
 /* ----------------------------------------------------------- page layouts */
 
 /** Villa detail: hero → USP strip → intro + highlights → gallery → indeling → booking → extras. */
-export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx }) {
+export function VillaPage({ villa, ctx, slug }: { villa: VillaContent; ctx: RenderCtx; slug: string }) {
+  const cms: CmsNode | undefined = ctx.cmsFile
+    ? { file: ctx.cmsFile, locale: ctx.locale, pointer: cmsPointer(slug), editMode: ctx.editMode }
+    : undefined
   return (
     <>
-      <HeroBlock data={{ type: 'hero', title: '', ctaLabel: '', ctaUrl: '', video: '', mobileVideo: '', images: villa.hero.images, mobileImages: villa.hero.mobileImages }} />
+      <HeroBlock
+        data={{ type: 'hero', title: '', ctaLabel: '', ctaUrl: '', video: '', mobileVideo: '', images: villa.hero.images, mobileImages: villa.hero.mobileImages }}
+        imageCms={cmsChild(cms, 'hero', 'images')}
+      />
 
       {villa.usps.length > 0 && (
         <section className="uspbar">
           <div className="container">
-            {villa.usps.map((u) => (
+            {villa.usps.map((u, i) => (
               <div className="usp" key={u.label}>
                 <Icon name="check" size={18} />
-                <span>{u.label}</span>
+                <Editable as="span" type="text" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'usps', i, 'label')} editMode={!!cms?.editMode}>{u.label}</Editable>
               </div>
             ))}
           </div>
@@ -731,14 +771,14 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
       <section className="section section-villa-intro">
         <div className="container villa-intro">
           <div className="villa-intro-text">
-            <h1>{villa.title}</h1>
+            <Editable as="h1" type="text" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'title')} editMode={!!cms?.editMode}>{villa.title}</Editable>
             {villa.paragraphs.map((html, i) => (
-              <RichText key={i} html={html} className="prose" />
+              <Editable key={i} type="html" className="prose" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'paragraphs', i)} editMode={!!cms?.editMode} html={html} />
             ))}
             {villa.moreParagraphs.length > 0 && (
               <ReadMore moreLabel="Lees meer" lessLabel="Lees minder">
                 {villa.moreParagraphs.map((html, i) => (
-                  <RichText key={i} html={html} className="prose" />
+                  <Editable key={i} type="html" className="prose" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'moreParagraphs', i)} editMode={!!cms?.editMode} html={html} />
                 ))}
               </ReadMore>
             )}
@@ -747,8 +787,8 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
             <aside className="villa-highlights">
               <h3>Goed om te weten</h3>
               <ul>
-                {villa.highlights.map((h) => (
-                  <li key={h}><Icon name="check" size={15} /><span>{h}</span></li>
+                {villa.highlights.map((h, i) => (
+                  <li key={h}><Icon name="check" size={15} /><Editable as="span" type="text" file={cms?.file ?? ''} locale={cms?.locale ?? ''} pointer={cmsJoin(cms?.pointer ?? '', 'highlights', i)} editMode={!!cms?.editMode}>{h}</Editable></li>
                 ))}
               </ul>
               <a className="btn btn-primary" href="#boeken">
@@ -760,10 +800,10 @@ export function VillaPage({ villa, ctx }: { villa: VillaContent; ctx: RenderCtx 
         </div>
       </section>
 
-      {villa.gallery.length > 0 && <GalleryBlock data={{ type: 'gallery', images: villa.gallery }} preview />}
+      {villa.gallery.length > 0 && <GalleryBlock data={{ type: 'gallery', images: villa.gallery }} preview cms={cmsChild(cms, 'gallery')} />}
       {villa.features.length > 0 && <FeaturesBlock data={{ type: 'features', groups: villa.features }} />}
       {villa.tommyId && <BookingBlock widget="boeken" accommodationId={villa.tommyId} ctx={ctx} />}
-      <Sections sections={villa.extraSections} ctx={ctx} />
+      <Sections sections={villa.extraSections} ctx={ctx} cmsBase={cms?.pointer} cmsKey="extraSections" />
     </>
   )
 }

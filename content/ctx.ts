@@ -49,8 +49,12 @@ function readPersons(params: SearchParams | undefined): number {
  * each villa's `tommyId`. It is fetched here rather than in the components so the calendar is part
  * of the server-rendered page (and shares one revalidating cache entry) instead of a load-time
  * request from every visitor's browser.
+ *
+ * `cmsFile` is the JSON file this page's body is sourced from (`home.json`, `pages.json`,
+ * `villas.json`, …). Combined with `?cms-edit=1` (`editMode`) it lets the Visual Editor address
+ * fields without changing public HTML.
  */
-export async function buildCtx(locale: string, searchParams?: SearchParams): Promise<RenderCtx> {
+export async function buildCtx(locale: string, searchParams?: SearchParams, cmsFile = ''): Promise<RenderCtx> {
   const site = getSite(locale)
   const villas = getVillas(locale)
   const searchSlug = findPageSlugByKind(locale, 'booking')
@@ -68,5 +72,7 @@ export async function buildCtx(locale: string, searchParams?: SearchParams): Pro
     searchPath: searchSlug ? `/${searchSlug}` : '',
     searchRange: readRange(searchParams),
     searchPersons: readPersons(searchParams),
+    editMode: first(searchParams, 'cms-edit') === '1',
+    cmsFile,
   }
 }
