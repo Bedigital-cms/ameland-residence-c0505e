@@ -171,3 +171,40 @@ export function localeForHost(host: string | null | undefined): string | null {
   if (!h) return null
   return map[h] ?? map[h.replace(/^www\./, '')] ?? null
 }
+
+/**
+ * The canonical (www) production origin that serves a given locale in per-domain mode
+ * (e.g. `nl` → `https://www.ameland-residence.nl`), or null when per-domain mode is off / the locale
+ * isn't mapped. `www` is the canonical host; the apex 301-redirects to it at the edge (Vercel).
+ */
+export function canonicalOriginForLocale(locale: string): string | null {
+  if (!domainLocaleMode()) return null
+  const host = Object.entries(domainLocaleMap()).find(([, loc]) => loc === locale)?.[0]
+  if (!host) return null
+  return `https://www.${host.replace(/^www\./, '')}`
+}
+
+/** locale → canonical www origin, for the cross-domain language switch (empty off per-domain mode). */
+export function crossDomainOrigins(): Record<string, string> {
+  if (!domainLocaleMode()) return {}
+  const out: Record<string, string> = {}
+  for (const loc of activeLocales()) {
+    const o = canonicalOriginForLocale(loc)
+    if (o) out[loc] = o
+  }
+  return out
+}
+
+/**
+ * Link-building config for the CURRENT request host. On a per-domain-mapped host the page serves ONE
+ * language prefix-free, so its links must be prefix-free too — behaviourally identical to
+ * `hideDefaultPrefix` but for whichever locale the host serves. Any other host (preview/staging) gets
+ * the normal config. Pass the result to `<LocaleProvider>` so every link renders correctly per host.
+ */
+export function linkConfigForHost(
+  host: string | null | undefined,
+  currentLocale: string,
+): { defaultLocale: string; hideDefaultPrefix: boolean } {
+  if (localeForHost(host)) return { defaultLocale: currentLocale, hideDefaultPrefix: true }
+  return { defaultLocale: defaultLocale(), hideDefaultPrefix: hideDefaultPrefix() }
+}

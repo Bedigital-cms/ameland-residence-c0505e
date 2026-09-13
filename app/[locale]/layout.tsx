@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { getSite } from '@/content/site'
-import { activeLocales, defaultLocale, domainLocaleMap, domainLocaleMode, hideDefaultPrefix, isActiveLocale } from '@/lib/i18n'
+import { activeLocales, canonicalOriginForLocale, defaultLocale, domainLocaleMode, hideDefaultPrefix, isActiveLocale } from '@/lib/i18n'
 import { localeDir } from '@/lib/locales'
 
 /**
@@ -34,19 +34,25 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   let languages: Record<string, string> | undefined
   if (locales.length > 1) {
     if (domainLocaleMode()) {
-      const localeToHost: Record<string, string> = {}
-      for (const [host, loc] of Object.entries(domainLocaleMap())) if (!localeToHost[loc]) localeToHost[loc] = host
-      const entries = locales.filter((l) => localeToHost[l]).map((l) => [l, `https://${localeToHost[l]}/`] as const)
-      languages = entries.length > 0 ? Object.fromEntries(entries) : undefined
+      // Absolute per-domain roots (canonical www host per language) + x-default → the default language.
+      const entries = locales
+        .map((l) => [l, canonicalOriginForLocale(l)] as const)
+        .filter((e): e is readonly [string, string] => !!e[1])
+        .map(([l, o]) => [l, `${o}/`] as const)
+      if (entries.length > 0) {
+        const langs = Object.fromEntries(entries) as Record<string, string>
+        const xdef = canonicalOriginForLocale(def)
+        if (xdef) langs['x-default'] = `${xdef}/`
+        languages = langs
+      }
     } else {
       languages = Object.fromEntries(locales.map((l) => [l, hideDefault && l === def ? '/' : `/${l}`]))
     }
   }
 
   // Social images are stored as "/media/<file>" paths; metadataBase turns them into absolute URLs.
-  // In per-domain mode the language already implies the domain, so derive it from the same map.
-  const siteHost = Object.entries(domainLocaleMap()).find(([, loc]) => loc === locale)?.[0]
-  const base = process.env.NEXT_PUBLIC_SITE_URL || (siteHost ? `https://${siteHost}` : '')
+  // In per-domain mode the language already implies the domain (canonical www origin).
+  const base = process.env.NEXT_PUBLIC_SITE_URL || canonicalOriginForLocale(locale) || ''
 
   return {
     ...(base ? { metadataBase: new URL(base) } : {}),

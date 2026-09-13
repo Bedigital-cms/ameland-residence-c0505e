@@ -1,12 +1,14 @@
 {
-  "$comment": "Per-site i18n configuration, managed by the BE Digital CMS tenant toggle. Do not edit by hand — change it via the tenant’s “Meertalig” settings so the CMS and the site stay in sync.",
+  "$comment": "Per-site i18n configuration. Production domain-locale mode: .nl serves Dutch and .de serves German, prefix-free, on their own domains. Preview/staging hosts (not in domainLocales) fall back to /nl and /de prefixes. In the CMS this is the tenant 'Meertalig' toggle (Per-domein taal) — keep them in sync.",
   "enabled": true,
   "defaultLocale": "nl",
-  "locales": [
-    "nl",
-    "de"
-  ],
+  "locales": ["nl", "de"],
   "hideDefaultPrefix": false,
-  "domainLocalesEnabled": false,
-  "domainLocales": {}
+  "domainLocalesEnabled": true,
+  "domainLocales": {
+    "ameland-residence.nl": "nl",
+    "www.ameland-residence.nl": "nl",
+    "ameland-residence.de": "de",
+    "www.ameland-residence.de": "de"
+  }
 }

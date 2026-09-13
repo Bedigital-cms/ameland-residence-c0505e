@@ -25,8 +25,9 @@ export function LanguageSwitcher({
   locales?: string[]
   variant?: 'header' | 'mobile'
 }) {
-  const { locale: current, defaultLocale, hideDefaultPrefix } = useLocaleConfig()
+  const { locale: current, defaultLocale, hideDefaultPrefix, domainOrigins } = useLocaleConfig()
   const pathname = usePathname() || '/'
+  const domainMode = Object.keys(domainOrigins).length > 0
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement | null>(null)
 
@@ -45,6 +46,12 @@ export function LanguageSwitcher({
   // prefix-free path, then re-apply the prefix — EXCEPT for the default language when its prefix is
   // hidden (then it stays clean). Works whether or not the current URL carries a prefix.
   const swap = (target: string) => {
+    // Per-domain mode: each language lives on its OWN domain, so switching means CROSSING domains.
+    // NL and DE slugs are not aligned (e.g. /villa-s ↔ /ferienhauser), so we jump to the target
+    // domain's home rather than guess a slug that may not exist (never an invalid cross-language URL).
+    // Per-page equivalent mapping (by content identity) is a later refinement.
+    if (domainMode && domainOrigins[target]) return domainOrigins[target]
+
     const parts = pathname.split('/')
     const bare = parts[1] && locales.includes(parts[1]) ? '/' + parts.slice(2).join('/') : pathname
     const clean = bare === '' ? '/' : bare
