@@ -3,12 +3,14 @@ import { notFound } from 'next/navigation'
 
 import { BlogPage, VillaPage } from '@/components/sections'
 import { Shell } from '@/components/Shell'
+import { VillaJsonLd, BlogJsonLd } from '@/components/JsonLd'
 import { getBlog, getBlogSlugs } from '@/content/blogs'
 import { buildCtx, type SearchParams } from '@/content/ctx'
 import { findPageSlugByKind } from '@/content/pages'
 import { getVilla, getVillaSlugs } from '@/content/villas'
 import { activeLocales } from '@/lib/i18n'
 import { metadataFrom } from '@/lib/seo'
+import { villaAlternates, blogAlternates, canonicalUrlOf } from '@/lib/alternates'
 
 /**
  * Detail pages of the two collections, NESTED under their own hub — exactly the URL structure the
@@ -63,11 +65,17 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const source = collectionFor(locale, slug)
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return metadataFrom(villa.seo, villa.title)
+    if (villa) {
+      const alternates = villaAlternates(locale, item)
+      return metadataFrom(villa.seo, villa.title, { alternates, canonicalUrl: canonicalUrlOf(alternates), locale })
+    }
   }
   if (source === 'blogs') {
     const blog = getBlog(locale, item)
-    if (blog) return metadataFrom(blog.seo, blog.title)
+    if (blog) {
+      const alternates = blogAlternates(locale, item)
+      return metadataFrom(blog.seo, blog.title, { alternates, canonicalUrl: canonicalUrlOf(alternates), locale })
+    }
   }
   return {}
 }
@@ -88,10 +96,22 @@ export default async function Page({
 
   if (source === 'villas') {
     const villa = getVilla(locale, item)
-    if (villa) return <Shell locale={locale}><VillaPage villa={villa} ctx={ctx} slug={item} /></Shell>
+    if (villa)
+      return (
+        <Shell locale={locale}>
+          <VillaJsonLd locale={locale} villa={villa} path={`/${slug}/${item}`} />
+          <VillaPage villa={villa} ctx={ctx} slug={item} />
+        </Shell>
+      )
   } else {
     const blog = getBlog(locale, item)
-    if (blog) return <Shell locale={locale}><BlogPage blog={blog} ctx={ctx} /></Shell>
+    if (blog)
+      return (
+        <Shell locale={locale}>
+          <BlogJsonLd locale={locale} blog={blog} path={`/${slug}/${item}`} />
+          <BlogPage blog={blog} ctx={ctx} />
+        </Shell>
+      )
   }
 
   notFound()

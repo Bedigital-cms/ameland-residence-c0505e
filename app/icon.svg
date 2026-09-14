@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ameland Residence">
+  <rect width="64" height="64" rx="14" fill="#070121"/>
+  <circle cx="44" cy="21" r="7" fill="#9efc4f"/>
+  <path d="M6 48c7-1 9-9 14-9s7 6 12 6 8-11 14-11 8 8 12 9v11H6z" fill="#9efc4f"/>
+  <path d="M6 48c7-1 9-9 14-9s7 6 12 6 8-11 14-11 8 8 12 9" fill="none" stroke="#070121" stroke-width="2" stroke-linejoin="round" opacity="0.25"/>
+</svg>

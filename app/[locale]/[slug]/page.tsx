@@ -8,6 +8,7 @@ import { getPage, getPageSlugs } from '@/content/pages'
 import { cmsPointer } from '@/lib/cmsEdit'
 import { activeLocales } from '@/lib/i18n'
 import { metadataFrom } from '@/lib/seo'
+import { pageAlternates, canonicalUrlOf } from '@/lib/alternates'
 import type { PageContent, Section, TextSection } from '@/lib/types'
 
 /**
@@ -42,7 +43,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale, slug } = await params
   const page = getPage(locale, slug)
-  return page ? metadataFrom(page.seo, page.title) : {}
+  if (!page) return {}
+  const alternates = pageAlternates(locale, slug)
+  return metadataFrom(page.seo, page.title, { alternates, canonicalUrl: canonicalUrlOf(alternates), locale })
 }
 
 /**

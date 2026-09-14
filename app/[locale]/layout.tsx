@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { Analytics } from '@/components/Analytics'
 import { CmsEditRuntime } from '@/components/CmsEditRuntime'
 import { getSite } from '@/content/site'
-import { activeLocales, canonicalOriginForLocale, defaultLocale, domainLocaleMode, hideDefaultPrefix, isActiveLocale } from '@/lib/i18n'
+import { activeLocales, canonicalOriginForLocale, isActiveLocale } from '@/lib/i18n'
 import { localeDir } from '@/lib/locales'
 
 /**
@@ -25,42 +25,17 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params
   if (!isActiveLocale(locale)) return {}
   const site = getSite(locale)
-  const locales = activeLocales()
 
-  // hreflang alternates — only meaningful once more than one locale is active.
-  //  · Per-domain mode (this client: .nl = nl, .de = de): each language lives on its OWN domain, so
-  //    the alternates must be ABSOLUTE per-domain roots — a root-relative path can't cross domains.
-  //  · Otherwise: root-relative alternates that work on any host without hardcoding a domain.
-  const hideDefault = hideDefaultPrefix()
-  const def = defaultLocale()
-  let languages: Record<string, string> | undefined
-  if (locales.length > 1) {
-    if (domainLocaleMode()) {
-      // Absolute per-domain roots (canonical www host per language) + x-default → the default language.
-      const entries = locales
-        .map((l) => [l, canonicalOriginForLocale(l)] as const)
-        .filter((e): e is readonly [string, string] => !!e[1])
-        .map(([l, o]) => [l, `${o}/`] as const)
-      if (entries.length > 0) {
-        const langs = Object.fromEntries(entries) as Record<string, string>
-        const xdef = canonicalOriginForLocale(def)
-        if (xdef) langs['x-default'] = `${xdef}/`
-        languages = langs
-      }
-    } else {
-      languages = Object.fromEntries(locales.map((l) => [l, hideDefault && l === def ? '/' : `/${l}`]))
-    }
-  }
-
-  // Social images are stored as "/media/<file>" paths; metadataBase turns them into absolute URLs.
-  // In per-domain mode the language already implies the domain (canonical www origin).
+  // Per-page canonical + hreflang are emitted by each page's generateMetadata (lib/alternates), so the
+  // layout deliberately does NOT set a root-level `alternates` — a layout hreflang would otherwise make
+  // every page point its language alternates at the homepage. metadataBase stays so relative social
+  // images (`/media/<file>`) resolve to absolute per-domain URLs.
   const base = process.env.NEXT_PUBLIC_SITE_URL || canonicalOriginForLocale(locale) || ''
 
   return {
     ...(base ? { metadataBase: new URL(base) } : {}),
     title: { default: `${site.brandName} — ${site.tagline}`, template: `%s | ${site.brandName}` },
     description: site.footer.about,
-    ...(languages ? { alternates: { languages } } : {}),
   }
 }
 
@@ -80,6 +55,10 @@ export default async function LocaleLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* All /media/* images 302-redirect to the CMS media origin — connect early so the LCP hero
+            and every other image resolve without a cold DNS+TLS handshake. */}
+        <link rel="preconnect" href="https://cms.bedigital.ai" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cms.bedigital.ai" />
         <link rel="stylesheet" href={FONTS} />
       </head>
       <body>
