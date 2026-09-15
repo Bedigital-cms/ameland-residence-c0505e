@@ -76,7 +76,8 @@ export function Header({ site, locale = 'nl' }: { site: SiteContent; locale?: st
             centred regardless of how wide the brand or the CTA happen to be. */}
         <div className="header-end">
           <div className="header-cta">
-            {/* switcherLocales() is empty in per-domain mode → the switcher hides itself. */}
+            {/* Multi-language sites (incl. per-domain nl/de) show the switcher; it links across
+                domains via crossDomainOrigins (provided by Shell). Single-language → hidden. */}
             <LanguageSwitcher locales={switcherLocales()} />
             <LocaleLink className="btn btn-primary" href={site.ctaUrl}>{site.ctaLabel}</LocaleLink>
           </div>
