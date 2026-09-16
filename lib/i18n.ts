@@ -149,13 +149,17 @@ export function domainLocaleMap(): Record<string, string> {
 }
 
 /**
- * Locales the in-page LANGUAGE SWITCHER should offer. Same as `activeLocales()` normally, but EMPTY
- * in per-domain mode — there each domain is a single language, so the switcher is hidden (the visitor
- * changes language by visiting the other domain, not via an in-page control). Routing and
- * `generateStaticParams` still use `activeLocales()`, so every language is built either way.
+ * Locales the in-page LANGUAGE SWITCHER should offer: every active locale once the site is truly
+ * multi-language (≥2 locales), otherwise none (a single-language site has nothing to switch).
+ *
+ * In per-domain mode each language lives on its own domain, so the switcher still shows both — it
+ * just links ACROSS domains (nl → www.…​.nl, de → www.…​.de) via `crossDomainOrigins()`, which the
+ * `Shell` passes to the `LocaleProvider`. Routing and `generateStaticParams` use `activeLocales()`
+ * regardless, so every language is built either way.
  */
 export function switcherLocales(): string[] {
-  return domainLocaleMode() ? [] : activeLocales()
+  const locales = activeLocales()
+  return locales.length >= 2 ? locales : []
 }
 
 /**
