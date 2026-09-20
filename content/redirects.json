@@ -10,6 +10,46 @@
       "source": "/blogs/vakantie-op-ameland-met-kinderen-zo-heeft-iedereen-vakantiev",
       "destination": "/blogs",
       "permanent": true
+    },
+    {
+      "source": "/ferienh%C3%A4user",
+      "destination": "/ferienhauser",
+      "permanent": true
+    },
+    {
+      "source": "/ferienh%C3%A4user/:slug*",
+      "destination": "/ferienhauser/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/villas",
+      "destination": "/villa-s",
+      "permanent": true
+    },
+    {
+      "source": "/villas/:slug*",
+      "destination": "/villa-s/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/villa's",
+      "destination": "/villa-s",
+      "permanent": true
+    },
+    {
+      "source": "/villa's/:slug*",
+      "destination": "/villa-s/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/last-minutes/ameland",
+      "destination": "/last-minutes",
+      "permanent": true
+    },
+    {
+      "source": "/Last-Minutes",
+      "destination": "/last-minutes",
+      "permanent": true
     }
   ]
 }
