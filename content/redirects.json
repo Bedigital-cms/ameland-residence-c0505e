@@ -1,5 +1,4 @@
 {
-  "$comment": "URL-omleidingen (301), afgeleid uit de oude WordPress-sitemaps (www.ameland-residence.nl/sitemap.xml + .de/sitemap.xml, gecrawld 2026-09-13). De nieuwe site gebruikt bewust EXACT dezelfde URL-structuur als de oude site — villa's genest onder de villa-hub (/villa-s/villa-zee, .de: /ferienhauser/villa-zee), artikelen onder /blogs/<slug>, alle overige pagina's vlak (/contact, /over-ons, /zoek-boek). Daardoor blijven 82/84 NL- en 51/51 DE-URL's ongewijzigd (200) en hebben ze GEEN omleiding nodig; een redirect zou daar juist een extra hop en verlies van linkwaarde zijn. Alleen twee oude NL-blogartikelen bestaan niet meer in de nieuwe content en krijgen een 301 naar de blog-hub (/blogs) — zelfde taal, zelfde rubriek, één hop, geen homepage-redirect. DE is volledig gedekt. Regels zijn vlak en zonder taalprefix; next.config.ts leest dit bestand en zet ze in domein-taalmodus om naar één 301-hop naar de prefix-vrije productie-URL per domein. Query strings blijven behouden. Beheer via de CMS Redirects-editor of de AI-agent.",
   "redirects": [
     {
       "source": "/blogs/een-luxe-vakantiehuis-op-de-waddeneilanden-daarom-kiezen-voor-ameland",
@@ -9,6 +8,46 @@
     {
       "source": "/blogs/vakantie-op-ameland-met-kinderen-zo-heeft-iedereen-vakantiev",
       "destination": "/blogs",
+      "permanent": true
+    },
+    {
+      "source": "/ferienh%C3%A4user",
+      "destination": "/ferienhauser",
+      "permanent": true
+    },
+    {
+      "source": "/ferienh%C3%A4user/:slug*",
+      "destination": "/ferienhauser/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/villas",
+      "destination": "/villa-s",
+      "permanent": true
+    },
+    {
+      "source": "/villas/:slug*",
+      "destination": "/villa-s/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/villa's",
+      "destination": "/villa-s",
+      "permanent": true
+    },
+    {
+      "source": "/villa's/:slug*",
+      "destination": "/villa-s/:slug*",
+      "permanent": true
+    },
+    {
+      "source": "/last-minutes/ameland",
+      "destination": "/last-minutes",
+      "permanent": true
+    },
+    {
+      "source": "/Last-Minutes",
+      "destination": "/last-minutes",
       "permanent": true
     }
   ]
