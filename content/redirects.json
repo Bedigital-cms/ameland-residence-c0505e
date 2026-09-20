@@ -45,11 +45,6 @@
       "source": "/last-minutes/ameland",
       "destination": "/last-minutes",
       "permanent": true
-    },
-    {
-      "source": "/Last-Minutes",
-      "destination": "/last-minutes",
-      "permanent": true
     }
   ]
 }
